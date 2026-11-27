@@ -227,12 +227,9 @@ const CHAR_ART = {
   <ellipse cx="48" cy="108" rx="27" ry="8" fill="#e8eff7" stroke="#c2d0df" stroke-width="1"/>
   <path d="M14 80c0-9 7-16 16-16h36c9 0 16 7 16 16v32H14z" fill="#f2f7fc" stroke="#b9c8d8" stroke-width="1.1"/>
   <path d="M19 80c0-5 4-9 9-9h40c5 0 9 4 9 9" fill="none" stroke="#ccd9e6" stroke-width="1.1"/>
-  <path d="M48 62c-12 0-22 6-27 14-3 5-5 12-6 19l-1 13h18c-2-11-1-19 4-26 3-4 7-6 12-6z" fill="url(#gmCloak)" stroke="#6b0f0f" stroke-width="1.1"/>
-  <path d="M48 62c12 0 22 6 27 14 3 5 5 12 6 19l1 13H64c2-11 1-19-4-26-3-4-7-6-12-6z" fill="url(#gmCloak)" stroke="#6b0f0f" stroke-width="1.1"/>
-  <path d="M30 70C22 64 17 54 17 44c0-4.6 2-8 5.4-10 1 7.6 4.4 14 9.6 18.4L36 70z" fill="url(#gmCloak)" stroke="#6b0f0f" stroke-width="1.1"/>
-  <path d="M66 70c8-6 13-16 13-26 0-4.6-2-8-5.4-10-1 7.6-4.4 14-9.6 18.4L60 70z" fill="url(#gmCloak)" stroke="#6b0f0f" stroke-width="1.1"/>
-  <path d="M22.4 44.4c.8 6.8 3.6 12.6 8.2 16.6" fill="none" stroke="#eab53c" stroke-width="1.5" opacity=".55"/>
-  <path d="M73.6 44.4c-.8 6.8-3.6 12.6-8.2 16.6" fill="none" stroke="#eab53c" stroke-width="1.5" opacity=".55"/>
+  <path d="M48 57c-13 0-23 6-28 15-3 5-5 12-6 19l-1 15h70l-1-15c-1-7-3-14-6-19-5-9-15-15-28-15z" fill="url(#gmCloak)" stroke="#6b0f0f" stroke-width="1.2"/>
+  <path d="M21.4 86c-1.6 6-2.2 12-2 18" fill="none" stroke="#eab53c" stroke-width="1.5" opacity=".5"/>
+  <path d="M74.6 86c1.6 6 2.2 12 2 18" fill="none" stroke="#eab53c" stroke-width="1.5" opacity=".5"/>
   <path d="M48 68c14 0 25 10 27 23 1 5 1 11 1 17H20c0-6 0-13 1-17 2-13 13-23 27-23z" fill="url(#gmTunic)" stroke="#0f2350" stroke-width="1.2"/>
   <path d="M31 77c9 7 25 7 34-1l-3 14c-8 6-21 6-28-1z" fill="#2f5cb8" opacity=".55"/>
   <path d="M34 89h28l-3 6H37z" fill="url(#gmGold)" stroke="#8a5f08" stroke-width=".8"/>
@@ -254,6 +251,8 @@ const CHAR_ART = {
   <path d="M45.6 53h4.8" stroke="#c08a5c" stroke-width="1.4" stroke-linecap="round"/>
   <path d="M43 55.4c1 3 2 5 5 5s4-2 5-5c-3 1-7 1-10 0z" fill="#3f2a1d"/>
   <path d="M44 59.4c2 1.6 6 1.6 8 0" fill="none" stroke="#8a5b3a" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M31.6 72.4c-5-5.4-6.4-13.6-3.2-20.6 4.8 4.2 7.6 10.4 8.6 17.4z" fill="url(#gmCloak)" stroke="#6b0f0f" stroke-width="1" stroke-linejoin="round"/>
+  <path d="M64.4 72.4c5-5.4 6.4-13.6 3.2-20.6-4.8 4.2-7.6 10.4-8.6 17.4z" fill="url(#gmCloak)" stroke="#6b0f0f" stroke-width="1" stroke-linejoin="round"/>
   <circle cx="77" cy="85" r="13" fill="none" stroke="#fb923c" stroke-width="1.7" opacity=".9"/>
   <circle cx="77" cy="85" r="9.4" fill="none" stroke="#fdba74" stroke-width="1.1" opacity=".85"/>
   <circle cx="77" cy="85" r="5.2" fill="none" stroke="#fb923c" stroke-width="2.1" opacity=".95"/>
