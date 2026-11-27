@@ -22,7 +22,9 @@ const KEY = {
 };
 
 const OWNER_ID = 'seunghu';
-const COMPOSER_IDS = ['seunghu', 'huhu', 'muse', 'gemini'];
+const COMPOSER_IDS = ['seunghu', 'huhu', 'muse', 'gemini', 'cue', 'vooy'];
+/* 카드 왼쪽 액센트 색 (앰버 · 에메랄드 · 시안 순환) */
+const TINTS = ['#f59e0b', '#10b981', '#38bdf8'];
 
 /* ---------------- tiny storage ---------------- */
 function read(key, fallback) {
@@ -87,7 +89,7 @@ function pillClass(stateName) {
 
 function charById(id) {
   const list = (state && state.characters) || [];
-  return list.find((c) => c.id === id) || { id, name: id, emoji: '👤', role: '', color: '#d9a03c' };
+  return list.find((c) => c.id === id) || { id, name: id, emoji: '👤', role: '', color: '#f59e0b' };
 }
 
 function roomById(id) {
@@ -101,7 +103,7 @@ function roomTag(roomId) {
 }
 
 function highlightMentions(text) {
-  return esc(text).replace(/@(승후|후후|뮤즈|제미나이)/g, '<span class="mention">@$1</span>');
+  return esc(text).replace(/@(승후|후후|뮤즈|제미나이|Cue|Vooy)/g, '<span class="mention">@$1</span>');
 }
 
 /* ---------------- data load ---------------- */
@@ -195,10 +197,10 @@ function renderMap() {
     const sel = selected && selected.type === 'char' && selected.id === c.id;
     const dotState = c.state === 'active' ? '' : c.state === 'idle' ? 'is-idle' : 'is-busy';
     return `<button class="char ${sel ? 'is-selected' : ''}" type="button"
-      data-char="${esc(c.id)}" style="left:${Number(c.x)}%;top:${Number(c.y)}%;--tint:${esc(c.color || '#d9a03c')};--delay:${(-i * 0.8).toFixed(2)}s"
+      data-char="${esc(c.id)}" style="left:${Number(c.x)}%;top:${Number(c.y)}%;--tint:${esc(c.color || '#f59e0b')};--delay:${(-i * 0.8).toFixed(2)}s"
       aria-label="${esc(c.name)} ${esc(c.role || '')}">
       <span class="char-avatar">${esc(c.emoji)}<span class="char-dot ${dotState}"></span></span>
-      <span class="char-label"><b>${esc(c.name)}</b>${c.role ? `<i>${esc(c.role)}</i>` : ''}</span>
+      <span class="char-label"><b>${esc(c.name)}</b></span>
     </button>`;
   }).join('');
 }
@@ -214,7 +216,7 @@ function renderDetail() {
     const r = roomById(c.room);
     el.mapDetail.innerHTML = `
       <div class="detail-top">
-        <div class="detail-avatar" style="--tint:${esc(c.color || '#d9a03c')}" aria-hidden="true">${esc(c.emoji)}</div>
+        <div class="detail-avatar" style="--tint:${esc(c.color || '#f59e0b')}" aria-hidden="true">${esc(c.emoji)}</div>
         <div class="detail-id">
           <h3>${esc(c.name)}</h3>
           <p>${esc(c.role || '')} · ${esc(r.emoji)} ${esc(r.name)}</p>
@@ -317,7 +319,7 @@ function renderChat() {
       const own = m.authorId === OWNER_ID;
       const room = roomById(m.room);
       return `<li class="msg ${own ? 'is-own' : ''}">
-        <span class="msg-avatar" style="--tint:${esc(c.color || '#d9a03c')}" aria-hidden="true">${esc(c.emoji)}</span>
+        <span class="msg-avatar" style="--tint:${esc(c.color || '#f59e0b')}" aria-hidden="true">${esc(c.emoji)}</span>
         <div class="msg-body">
           <div class="msg-head">
             <span class="msg-author">${esc(c.name)}</span>
@@ -344,9 +346,9 @@ function customTasks() {
 }
 
 function renderProjects() {
-  const base = (state.projects || []).map((p) => {
+  const base = (state.projects || []).map((p, i) => {
     const badgeState = p.status.indexOf('완료') >= 0 ? 'done' : 'wait';
-    return `<article class="project-card" style="--tint:#c99a4e">
+    return `<article class="project-card" style="--tint:${TINTS[i % TINTS.length]}">
       <div class="project-head">
         <span class="project-emoji" aria-hidden="true">${esc(p.emoji)}</span>
         <div class="project-title-wrap">
@@ -369,7 +371,7 @@ function renderProjects() {
   });
 
   const mine = customTasks().map((t) => `
-    <article class="project-card" style="--tint:#b98a52">
+    <article class="project-card" style="--tint:#f59e0b">
       <div class="project-head">
         <span class="project-emoji" aria-hidden="true">${esc(t.emoji || '📌')}</span>
         <div class="project-title-wrap">
@@ -390,7 +392,7 @@ function renderAgents() {
   el.agentCards.innerHTML = (state.agents || []).map((a) => `
     <article class="agent-card">
       <div class="agent-head">
-        <span class="agent-avatar" style="--tint:${esc((charById(a.id).color) || '#d9a03c')}" aria-hidden="true">${esc(a.emoji)}</span>
+        <span class="agent-avatar" style="--tint:${esc((charById(a.id).color) || '#f59e0b')}" aria-hidden="true">${esc(a.emoji)}</span>
         <div class="agent-id">
           <h3>${esc(a.name)}</h3>
           <p>${esc(a.role)}</p>

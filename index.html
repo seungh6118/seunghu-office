@@ -3,29 +3,35 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#fdf6ea" />
+  <meta name="theme-color" content="#090D16" />
+  <meta name="color-scheme" content="dark" />
   <meta name="description" content="승후님 전용 비서실 — 오피스 맵, 회의실, 작업실, 비서현황, 메모" />
-  <title>👑 승후 비서실</title>
+  <title>승후 비서실</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="승후 비서실" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="app-header">
     <div class="header-inner">
       <div class="brand">
-        <span class="brand-crown" aria-hidden="true">👑</span>
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3.5 8.2 7.6 11l4.4-6.2L16.4 11l4.1-2.8-1.9 9.3H5.4L3.5 8.2Z" />
+            <path d="M6.6 20.4h10.8" />
+          </svg>
+        </span>
         <div class="brand-text">
           <h1>승후 비서실</h1>
-          <p class="brand-sub">승후님 전용</p>
+          <p class="brand-sub">승후님 전용 · OFFLINE STUDIO</p>
         </div>
       </div>
       <button class="sync-badge" id="sync-btn" type="button" title="state.json 새로 불러오기">
         <span class="sync-dot" aria-hidden="true"></span>
         <span class="sync-copy">
-          <span class="sync-label">실시간 동기화</span>
+          <span class="sync-label">동기화</span>
           <span class="sync-time" id="sync-time">불러오는 중…</span>
         </span>
       </button>
@@ -34,29 +40,56 @@
 
   <nav class="tabbar" id="tabbar" role="tablist" aria-label="주요 화면">
     <button class="tab is-active" type="button" role="tab" data-tab="map" aria-controls="view-map" aria-selected="true">
-      <span class="tab-ico" aria-hidden="true">🗺️</span><span class="tab-lbl">오피스 맵</span>
+      <span class="tab-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3 3 7.4l9 4.4 9-4.4L12 3Z" />
+          <path d="m3 12.2 9 4.4 9-4.4" />
+          <path d="m3 16.9 9 4.4 9-4.4" />
+        </svg>
+      </span><span class="tab-lbl">오피스 맵</span>
     </button>
     <button class="tab" type="button" role="tab" data-tab="chat" aria-controls="view-chat" aria-selected="false">
-      <span class="tab-ico" aria-hidden="true">💬</span><span class="tab-lbl">회의실</span>
+      <span class="tab-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.5 11.6c0 4.1-3.8 7.4-8.5 7.4a9.7 9.7 0 0 1-2.7-.4L4.5 20l1.3-3.5a7 7 0 0 1-2.3-5c0-4.1 3.8-7.4 8.5-7.4s8.5 3.3 8.5 7.5Z" />
+          <path d="M8.6 11.6h.01M12 11.6h.01M15.4 11.6h.01" />
+        </svg>
+      </span><span class="tab-lbl">회의실</span>
     </button>
     <button class="tab" type="button" role="tab" data-tab="work" aria-controls="view-work" aria-selected="false">
-      <span class="tab-ico" aria-hidden="true">📋</span><span class="tab-lbl">작업실</span>
+      <span class="tab-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4.5" y="4" width="15" height="17" rx="3" />
+          <path d="M9 4V3.4c0-.8.6-1.4 1.4-1.4h3.2c.8 0 1.4.6 1.4 1.4V4" />
+          <path d="M8.8 10.4h6.4M8.8 14.2h4.2" />
+        </svg>
+      </span><span class="tab-lbl">작업실</span>
     </button>
     <button class="tab" type="button" role="tab" data-tab="status" aria-controls="view-status" aria-selected="false">
-      <span class="tab-ico" aria-hidden="true">📊</span><span class="tab-lbl">비서현황</span>
+      <span class="tab-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12.4h3.6l2.4-6.2 4.4 12 2.2-5.8H21" />
+        </svg>
+      </span><span class="tab-lbl">비서현황</span>
     </button>
     <button class="tab" type="button" role="tab" data-tab="memo" aria-controls="view-memo" aria-selected="false">
-      <span class="tab-ico" aria-hidden="true">📝</span><span class="tab-lbl">메모</span>
+      <span class="tab-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6.5 2.8h7.6L19 7.7v12.4a1.1 1.1 0 0 1-1.1 1.1H6.5a1.1 1.1 0 0 1-1.1-1.1V3.9a1.1 1.1 0 0 1 1.1-1.1Z" />
+          <path d="M14 3.2v4.9h5" />
+          <path d="M8.6 13h6.8M8.6 16.6h4.4" />
+        </svg>
+      </span><span class="tab-lbl">메모</span>
     </button>
   </nav>
 
   <main class="app-main">
     <div class="load-error" id="load-error" hidden>
       <strong>데이터를 불러오지 못했어요</strong>
-      <p><code>data/state.json</code>을 읽을 수 없습니다. 로컬 파일을 더블클릭해 열었다면 <code>python3 -m http.server</code> 같은 웹 서버로 열거나, GitHub Pages·Vercel 배포 주소로 접속해 주세요.</p>
+      <p><code>data/state.json</code>을 읽을 수 없습니다. 로컬 파일을 더블클릭해 열었다면 <code>python3 -m http.server</code> 같은 웹 서버로 열거나, GitHub Pages 주소로 접속해 주세요.</p>
     </div>
 
-    <!-- 🗺️ 오피스 맵 -->
+    <!-- 오피스 맵 -->
     <section class="view is-active" id="view-map" data-view="map" role="tabpanel" aria-labelledby="map-title">
       <div class="hq-card">
         <div class="hq-head">
@@ -73,7 +106,7 @@
 
       <div class="map-card">
         <div class="map-stage" id="map-stage">
-          <img class="map-img" id="map-img" src="assets/office-map-bg.png" alt="나무 책상과 회의실, 소파 라운지가 있는 3D 오피스 맵" />
+          <img class="map-img" id="map-img" src="assets/office-map-bg.png" alt="야경이 내려다보이는 다크 통유리 펜트하우스 오피스 — 상단 중앙 지휘 데스크, 좌측 하단 유리 대회의실, 우측 하단 라운지 소파" />
           <div class="map-layer" id="room-labels"></div>
           <div class="map-layer" id="characters"></div>
         </div>
@@ -81,12 +114,25 @@
       </div>
 
       <div class="detail-sheet" id="map-detail" hidden></div>
+
+      <div class="map-empty" id="map-empty">
+        <span class="me-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9A1.5 1.5 0 0 1 18.5 16H9l-5 4V5.5Z" />
+            <path d="M8.5 8.5h7M8.5 12h4.5" />
+          </svg>
+        </span>
+        <span>
+          <b>방이나 비서를 눌러 보세요</b>
+          지금 하는 일, 다음 할 일, 최근 활동이 이 자리에 펼쳐집니다.
+        </span>
+      </div>
     </section>
 
-    <!-- 💬 회의실 -->
+    <!-- 회의실 -->
     <section class="view" id="view-chat" data-view="chat" role="tabpanel" aria-labelledby="chat-title" hidden>
       <div class="view-head">
-        <h2 id="chat-title">💬 회의실</h2>
+        <h2 id="chat-title">회의실</h2>
         <p>비서들이 모여 오늘 할 일을 맞추는 방이에요.</p>
       </div>
 
@@ -109,17 +155,17 @@
       </form>
     </section>
 
-    <!-- 📋 작업실 -->
+    <!-- 작업실 -->
     <section class="view" id="view-work" data-view="work" role="tabpanel" aria-labelledby="work-title" hidden>
       <div class="view-head">
-        <h2 id="work-title">📋 작업실</h2>
+        <h2 id="work-title">작업실</h2>
         <p>지금 굴러가는 프로젝트와 다음 할 일.</p>
       </div>
 
       <div class="card-grid" id="project-list"></div>
 
       <form class="add-panel" id="task-form">
-        <h3>➕ 새 작업 지시</h3>
+        <h3>새 작업 지시</h3>
         <div class="field-row">
           <label class="field field-emoji">
             <span>아이콘</span>
@@ -158,7 +204,8 @@
               <option>후후</option>
               <option>뮤즈</option>
               <option>제미나이</option>
-              <option>생활/행정</option>
+              <option>Cue</option>
+              <option>Vooy</option>
               <option>내가 직접</option>
             </select>
           </label>
@@ -168,23 +215,23 @@
       </form>
     </section>
 
-    <!-- 📊 비서현황 -->
+    <!-- 비서현황 -->
     <section class="view" id="view-status" data-view="status" role="tabpanel" aria-labelledby="status-title" hidden>
       <div class="view-head">
-        <h2 id="status-title">📊 비서현황</h2>
+        <h2 id="status-title">비서현황</h2>
         <p>누가 무엇을 들고 있는지 한눈에.</p>
       </div>
 
       <div class="agent-grid" id="agent-cards"></div>
 
-      <h3 class="sub-head">🕘 스케줄 액션 타임라인</h3>
+      <h3 class="sub-head">스케줄 액션 타임라인</h3>
       <ol class="timeline" id="schedule-list"></ol>
     </section>
 
-    <!-- 📝 메모 -->
+    <!-- 메모 -->
     <section class="view" id="view-memo" data-view="memo" role="tabpanel" aria-labelledby="memo-title" hidden>
       <div class="view-head">
-        <h2 id="memo-title">📝 메모</h2>
+        <h2 id="memo-title">메모</h2>
         <p>핀 고정해 두면 위에 남아요.</p>
       </div>
 
