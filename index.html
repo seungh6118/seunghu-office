@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#090D16" />
-  <meta name="color-scheme" content="dark" />
-  <meta name="description" content="승후님 전용 비서실 — 오피스 맵, 회의실, 작업실, 비서현황, 메모" />
+  <meta name="theme-color" content="#EEF5FE" />
+  <meta name="color-scheme" content="light" />
+  <meta name="description" content="승후님 전용 히어로 본부 — 오피스 맵, 회의실, 작업실, 비서현황, 메모 (Supabase 실시간 동기화)" />
   <title>승후 비서실</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="승후 비서실" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -25,13 +25,13 @@
         </span>
         <div class="brand-text">
           <h1>승후 비서실</h1>
-          <p class="brand-sub">승후님 전용 · OFFLINE STUDIO</p>
+          <p class="brand-sub">승후님 전용 · HERO HQ</p>
         </div>
       </div>
-      <button class="sync-badge" id="sync-btn" type="button" title="state.json 새로 불러오기">
+      <button class="sync-badge" id="sync-btn" type="button" title="state.json + Supabase 실시간 DB 새로 불러오기">
         <span class="sync-dot" aria-hidden="true"></span>
         <span class="sync-copy">
-          <span class="sync-label">동기화</span>
+          <span class="sync-label">실시간 DB</span>
           <span class="sync-time" id="sync-time">불러오는 중…</span>
         </span>
       </button>
@@ -93,7 +93,7 @@
     <section class="view is-active" id="view-map" data-view="map" role="tabpanel" aria-labelledby="map-title">
       <div class="hq-card">
         <div class="hq-head">
-          <span class="hq-emoji" aria-hidden="true">👑</span>
+          <span class="hq-emoji" aria-hidden="true">🦸</span>
           <div class="hq-copy">
             <h2 id="map-title">승후 비서실 본부</h2>
             <p class="hq-summary" id="hq-summary">불러오는 중…</p>
@@ -106,7 +106,10 @@
 
       <div class="map-card">
         <div class="map-stage" id="map-stage">
-          <img class="map-img" id="map-img" src="assets/office-map-bg.png" alt="야경이 내려다보이는 다크 통유리 펜트하우스 오피스 — 상단 중앙 지휘 데스크, 좌측 하단 유리 대회의실, 우측 하단 라운지 소파" />
+          <picture>
+            <source type="image/webp" srcset="assets/office-map-bg.webp" />
+            <img class="map-img" id="map-img" src="assets/office-map-bg.png" alt="밝은 낮의 초고층 히어로 본부 — 상단 중앙 지휘 데스크와 회장님 의자, 좌측 유리 대회의실의 홀로그램 테이블, 우측 하단 라운지의 흰 소파" />
+          </picture>
           <div class="map-layer" id="room-labels"></div>
           <div class="map-layer" id="characters"></div>
         </div>
@@ -226,6 +229,21 @@
 
       <h3 class="sub-head">스케줄 액션 타임라인</h3>
       <ol class="timeline" id="schedule-list"></ol>
+
+      <h3 class="sub-head">외부 에이전트 연동</h3>
+      <section class="sync-panel">
+        <h3>Supabase 실시간 DB</h3>
+        <p>뮤즈·Cue·Vooy·제미나이/클로드가 같은 테이블에 글과 작업 상태를 남기면 이 화면에 바로 뜽니다. 45초마다 자동 동기화되고, 위 동기화 배지를 누르면 즉시 새로고칩니다.</p>
+        <div class="sync-tables">
+          <span class="sync-table">office_messages</span>
+          <span class="sync-table">office_tasks</span>
+          <span class="sync-table">office_memos</span>
+          <span class="sync-table">office_agents</span>
+        </div>
+        <div class="sync-links">
+          <a class="sync-link" href="https://github.com/seungh6118/seunghu-office/blob/main/AGENT_SYNC.md" target="_blank" rel="noopener">연동 가이드 (AGENT_SYNC.md)</a>
+        </div>
+      </section>
     </section>
 
     <!-- 메모 -->
