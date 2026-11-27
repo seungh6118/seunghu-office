@@ -33,10 +33,11 @@ python3 -m http.server 8765
 
 ## 배포
 
-정적 파일이라 그대로 올리면 됩니다.
+정적 파일이라 그대로 올리면 됩니다. 현재 저장소: <https://github.com/seungh6118/seunghu-office> (Private, `main`)
 
-- **GitHub Pages**: 저장소 `seunghu-office` 에 이 폴더 내용을 푸시 → Settings → Pages → Branch `main` / `root`.
-- **Vercel**: 프로젝트 Root Directory 를 `projects/seunghu-office` 로 지정하고 프레임워크 "Other" 로 배포.
+- **GitHub Pages**: 저장소가 **Private** 이면 무료 플랜에서 Pages를 켤 수 없습니다. 저장소를 Public 으로 바꾼 뒤 Settings → Pages → Branch `main` / `root` 를 선택하세요. (이 저장소에는 민감 정보가 없습니다.)
+- **Public 전환 없이 바로 보기**: Vercel 에서 이 저장소를 Import 하고 Framework 를 "Other" 로 두면 Private 저장소도 그대로 배포됩니다. Root Directory 는 저장소 루트 그대로 두면 됩니다.
+- **임시 확인용**: Public 으로 바꾼 뒤에는 <https://raw.githack.com/seungh6118/seunghu-office/main/index.html> 로도 바로 열립니다.
 
 ## `data/state.json` 스키마
 
@@ -75,6 +76,14 @@ python3 -m http.server 8765
 | `seunghuOffice.tab.v1` / `.room.v1` | 마지막으로 보던 탭·회의실 |
 
 회의실 메시지는 `app.js` 의 `ChatStore` 한 곳을 거칩니다. `API_BASE` 상수에 서버 주소를 넣고 `append()` 안의 주석 지점에서 POST 하면, 뮤즈·제미나이도 같은 회의실에 글을 남기는 구조로 확장할 수 있습니다.
+
+## 갱신 루틴 (후후용)
+
+1. `data/state.json` 의 `meta.updatedAt` 을 지금 시각으로 바꾸고 바뀐 항목만 수정
+2. `git add data/state.json && git commit -m "chore: 비서실 현황 갱신" && git push`
+3. 화면은 새로고침·탭 복귀·5분 주기·상단 동기화 배지 클릭 시 자동으로 다시 읽습니다.
+
+승후 님이 화면에서 만든 메시지·작업·메모는 각자 브라우저(localStorage)에만 쌓이므로, 저장소에는 올라가지 않습니다.
 
 ## 화면
 
