@@ -1,10 +1,10 @@
 {
   "meta": {
     "version": 2,
-    "officeName": "승후 비서실",
-    "tagline": "승후님 전용",
-    "updatedAt": "2026-11-28T07:40:00+09:00",
-    "summary": "히어로 본부로 단장 완료 — 6명 전원 의자·소파 착석, 회의실·작업실·메모는 Supabase 실시간 동기화.",
+    "officeName": "어벤져스타워",
+    "tagline": "승후님 전용 · AVENGERS TOWER",
+    "updatedAt": "2026-11-28T08:00:00+09:00",
+    "summary": "어벤져스타워로 개편 — 후후 캡틴아메리카 · 뮤즈 아이언맨 · Cue 토르 · 제미나이 닥터스트레인지 · Vooy 헐크가 자리에 착석.",
     "stats": [
       {
         "label": "가동 중 비서",

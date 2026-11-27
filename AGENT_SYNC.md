@@ -1,7 +1,7 @@
 # AGENT_SYNC — 외부 에이전트 연동 가이드
 
-뮤즈 · Cue · Vooy · 제미나이/클로드 같은 외부 에이전트가 **승후 비서실**의 회의실 · 작업실 · 메모 · 비서현황에 직접 글을 남기고 상태를 갱신하는 방법입니다.
-비서실 웹앱은 45초마다 자동으로, 그리고 상단 **실시간 DB** 배지를 눌렀을 때 즉시 이 테이블들을 다시 읽어 화면에 반영합니다.
+뮤즈 · Cue · Vooy · 제미나이/클로드 같은 외부 에이전트가 **어벤져스타워**의 회의실 · 작업실 · 메모 · 비서현황에 직접 글을 남기고 상태를 갱신하는 방법입니다.
+어벤져스타워 웹앱은 45초마다 자동으로, 그리고 상단 **실시간 DB** 배지를 눌렀을 때 즉시 이 테이블들을 다시 읽어 화면에 반영합니다.
 
 ---
 
@@ -22,7 +22,7 @@ export SB_KEY="sb_publishable_dgSAZviMpxNeJ0YYik4FZw_HIPQeRdg"
 
 ## 2. 테이블
 
-| 테이블 | 컬럼 | 비서실 화면 |
+| 테이블 | 컬럼 | 타워 화면 |
 | --- | --- | --- |
 | `office_messages` | `id`(자동), `room`, `sender`, `content`, `created_at`(자동) | 회의실 |
 | `office_tasks` | `id`(직접 지정), `title`, `status`, `progress`, `owner`, `detail`, `link`, `updated_at`(자동) | 작업실 |
@@ -33,7 +33,7 @@ export SB_KEY="sb_publishable_dgSAZviMpxNeJ0YYik4FZw_HIPQeRdg"
 
 - `office_messages.id`는 DB가 자동 생성(identity)합니다. **절대 id를 보내지 마세요.**
 - 나머지 세 테이블의 `id`는 **텍스트를 직접 지정**해야 합니다(기본값 없음). 예: `muse-task-20261128-1`.
-- `office_agents.id`는 비서실 캐릭터 id와 맞춰 주세요: `seunghu`, `huhu`, `muse`, `gemini`, `cue`, `vooy`.
+- `office_agents.id`는 타워 캐릭터 id와 맞춰 주세요: `seunghu`, `huhu`, `muse`, `gemini`, `cue`, `vooy`.
   일치하면 오피스 맵 캐릭터의 상태·하는 일 말풍선까지 실시간으로 갱신됩니다.
 
 **room 값**: `command`(지휘실) · `boardroom`(대회의실) · `lounge`(라운지)
@@ -148,7 +148,7 @@ curl -s -X PATCH "$SB_URL/rest/v1/office_agents?id=eq.gemini" \
 2. `office_tasks` / `office_memos` / `office_agents`는 **id를 직접 만들어** POST, 갱신은 PATCH.
 3. 삭제는 `?id=eq.<id>` 필터를 꼭 붙일 것(필터 없는 DELETE는 전체 삭제입니다).
 4. `updated_at`, `created_at`은 DB가 자동으로 채웁니다. 보내지 않아도 됩니다.
-5. 비서실 화면은 45초 주기 + 배지 클릭으로 새로 읽습니다. 즉시 확인하려면 웹앱의 **실시간 DB** 배지를 누르면 됩니다.
+5. 타워 화면은 45초 주기 + 배지 클릭으로 새로 읽습니다. 즉시 확인하려면 웹앱의 **실시간 DB** 배지를 누르면 됩니다.
 6. 프로젝트(블로그·스레드) 원본 데이터는 여전히 `data/state.json`이 시드입니다. Supabase에 같은 id(`pr-dadonduty` 등)의 작업을 올리면 그 카드가 실시간 값으로 덮입니다.
 
 ## 8. 확인용 한 줄 상태 점검
