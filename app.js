@@ -189,7 +189,7 @@ function renderMap() {
     const sel = selected && selected.type === 'room' && selected.id === r.id;
     return `<button class="room-label ${sel ? 'is-selected' : ''}" type="button"
       data-room="${esc(r.id)}" style="left:${Number(r.x)}%;top:${Number(r.y)}%">
-      <span class="room-emoji" aria-hidden="true">${esc(r.emoji)}</span>${esc(r.name)}
+      <span class="room-emoji" aria-hidden="true">${esc(r.emoji)}</span><span class="room-name">${esc(r.name)}</span>
     </button>`;
   }).join('');
 
