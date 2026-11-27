@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#fdf6ea" />
+  <meta name="description" content="승후님 전용 비서실 — 오피스 맵, 회의실, 작업실, 비서현황, 메모" />
+  <title>👑 승후 비서실</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="승후 비서실" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-crown" aria-hidden="true">👑</span>
+        <div class="brand-text">
+          <h1>승후 비서실</h1>
+          <p class="brand-sub">승후님 전용</p>
+        </div>
+      </div>
+      <button class="sync-badge" id="sync-btn" type="button" title="state.json 새로 불러오기">
+        <span class="sync-dot" aria-hidden="true"></span>
+        <span class="sync-copy">
+          <span class="sync-label">실시간 동기화</span>
+          <span class="sync-time" id="sync-time">불러오는 중…</span>
+        </span>
+      </button>
+    </div>
+  </header>
+
+  <nav class="tabbar" id="tabbar" role="tablist" aria-label="주요 화면">
+    <button class="tab is-active" type="button" role="tab" data-tab="map" aria-controls="view-map" aria-selected="true">
+      <span class="tab-ico" aria-hidden="true">🗺️</span><span class="tab-lbl">오피스 맵</span>
+    </button>
+    <button class="tab" type="button" role="tab" data-tab="chat" aria-controls="view-chat" aria-selected="false">
+      <span class="tab-ico" aria-hidden="true">💬</span><span class="tab-lbl">회의실</span>
+    </button>
+    <button class="tab" type="button" role="tab" data-tab="work" aria-controls="view-work" aria-selected="false">
+      <span class="tab-ico" aria-hidden="true">📋</span><span class="tab-lbl">작업실</span>
+    </button>
+    <button class="tab" type="button" role="tab" data-tab="status" aria-controls="view-status" aria-selected="false">
+      <span class="tab-ico" aria-hidden="true">📊</span><span class="tab-lbl">비서현황</span>
+    </button>
+    <button class="tab" type="button" role="tab" data-tab="memo" aria-controls="view-memo" aria-selected="false">
+      <span class="tab-ico" aria-hidden="true">📝</span><span class="tab-lbl">메모</span>
+    </button>
+  </nav>
+
+  <main class="app-main">
+    <div class="load-error" id="load-error" hidden>
+      <strong>데이터를 불러오지 못했어요</strong>
+      <p><code>data/state.json</code>을 읽을 수 없습니다. 로컬 파일을 더블클릭해 열었다면 <code>python3 -m http.server</code> 같은 웹 서버로 열거나, GitHub Pages·Vercel 배포 주소로 접속해 주세요.</p>
+    </div>
+
+    <!-- 🗺️ 오피스 맵 -->
+    <section class="view is-active" id="view-map" data-view="map" role="tabpanel" aria-labelledby="map-title">
+      <div class="hq-card">
+        <div class="hq-head">
+          <span class="hq-emoji" aria-hidden="true">👑</span>
+          <div class="hq-copy">
+            <h2 id="map-title">승후 비서실 본부</h2>
+            <p class="hq-summary" id="hq-summary">불러오는 중…</p>
+          </div>
+        </div>
+        <div class="hq-stats" id="hq-stats"></div>
+      </div>
+
+      <div class="chip-row" id="room-chips" aria-label="방 상태와 움직임 설정"></div>
+
+      <div class="map-card">
+        <div class="map-stage" id="map-stage">
+          <img class="map-img" id="map-img" src="assets/office-map-bg.png" alt="나무 책상과 회의실, 소파 라운지가 있는 3D 오피스 맵" />
+          <div class="map-layer" id="room-labels"></div>
+          <div class="map-layer" id="characters"></div>
+        </div>
+        <p class="map-hint">방이나 비서를 눌러 지금 하는 일을 확인하세요</p>
+      </div>
+
+      <div class="detail-sheet" id="map-detail" hidden></div>
+    </section>
+
+    <!-- 💬 회의실 -->
+    <section class="view" id="view-chat" data-view="chat" role="tabpanel" aria-labelledby="chat-title" hidden>
+      <div class="view-head">
+        <h2 id="chat-title">💬 회의실</h2>
+        <p>비서들이 모여 오늘 할 일을 맞추는 방이에요.</p>
+      </div>
+
+      <div class="chip-row" id="chat-rooms" aria-label="회의실 방 필터"></div>
+      <ul class="msg-list" id="msg-list" aria-live="polite"></ul>
+
+      <form class="composer" id="chat-form" autocomplete="off">
+        <div class="composer-top">
+          <label class="sender-pick">
+            <span>보내는 사람</span>
+            <select id="chat-sender"></select>
+          </label>
+          <div class="mention-chips" id="mention-chips" aria-label="멘션 추가"></div>
+        </div>
+        <div class="composer-input">
+          <textarea id="chat-input" rows="2" placeholder="할 말을 적어 주세요" aria-label="메시지"></textarea>
+          <button class="send-btn" type="submit">보내기</button>
+        </div>
+        <p class="composer-hint" id="chat-hint">브라우저에 저장됩니다.</p>
+      </form>
+    </section>
+
+    <!-- 📋 작업실 -->
+    <section class="view" id="view-work" data-view="work" role="tabpanel" aria-labelledby="work-title" hidden>
+      <div class="view-head">
+        <h2 id="work-title">📋 작업실</h2>
+        <p>지금 굴러가는 프로젝트와 다음 할 일.</p>
+      </div>
+
+      <div class="card-grid" id="project-list"></div>
+
+      <form class="add-panel" id="task-form">
+        <h3>➕ 새 작업 지시</h3>
+        <div class="field-row">
+          <label class="field field-emoji">
+            <span>아이콘</span>
+            <select id="task-emoji">
+              <option value="📌">📌</option>
+              <option value="🧵">🧵</option>
+              <option value="📝">📝</option>
+              <option value="🎁">🎁</option>
+              <option value="🎥">🎥</option>
+              <option value="🏠">🏠</option>
+              <option value="🛠️">🛠️</option>
+              <option value="💡">💡</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>작업 이름</span>
+            <input id="task-title" type="text" maxlength="60" placeholder="예: 이번 주 스레드 소재 5개 뽑기" required />
+          </label>
+        </div>
+        <label class="field">
+          <span>다음 할 일 <em>(선택)</em></span>
+          <input id="task-next" type="text" maxlength="120" placeholder="예: 목요일 저녁 9시 전까지 초안" />
+        </label>
+        <div class="field-row">
+          <label class="field">
+            <span>상태</span>
+            <select id="task-status">
+              <option>진행중</option>
+              <option>대기</option>
+              <option>완료</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>맡는 비서</span>
+            <select id="task-owner">
+              <option>후후</option>
+              <option>뮤즈</option>
+              <option>제미나이</option>
+              <option>생활/행정</option>
+              <option>내가 직접</option>
+            </select>
+          </label>
+        </div>
+        <button class="primary-btn" type="submit">작업실에 추가</button>
+        <p class="form-hint">추가한 작업은 이 브라우저에 저장돼요.</p>
+      </form>
+    </section>
+
+    <!-- 📊 비서현황 -->
+    <section class="view" id="view-status" data-view="status" role="tabpanel" aria-labelledby="status-title" hidden>
+      <div class="view-head">
+        <h2 id="status-title">📊 비서현황</h2>
+        <p>누가 무엇을 들고 있는지 한눈에.</p>
+      </div>
+
+      <div class="agent-grid" id="agent-cards"></div>
+
+      <h3 class="sub-head">🕘 스케줄 액션 타임라인</h3>
+      <ol class="timeline" id="schedule-list"></ol>
+    </section>
+
+    <!-- 📝 메모 -->
+    <section class="view" id="view-memo" data-view="memo" role="tabpanel" aria-labelledby="memo-title" hidden>
+      <div class="view-head">
+        <h2 id="memo-title">📝 메모</h2>
+        <p>핀 고정해 두면 위에 남아요.</p>
+      </div>
+
+      <form class="memo-form" id="memo-form">
+        <textarea id="memo-input" rows="2" maxlength="300" placeholder="빠른 메모…" aria-label="메모 내용"></textarea>
+        <button class="primary-btn" type="submit">메모 추가</button>
+      </form>
+
+      <ul class="memo-list" id="memo-list"></ul>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
