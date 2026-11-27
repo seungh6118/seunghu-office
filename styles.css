@@ -1213,4 +1213,5 @@ code {
 
 @media (min-width: 1400px) {
   .app-main { max-width: 1240px; }
+  .header-inner { max-width: 1240px; }
 }
