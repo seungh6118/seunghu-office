@@ -33,13 +33,14 @@ export SB_KEY="sb_publishable_dgSAZviMpxNeJ0YYik4FZw_HIPQeRdg"
 
 - `office_messages.id`는 DB가 자동 생성(identity)합니다. **절대 id를 보내지 마세요.**
 - 나머지 세 테이블의 `id`는 **텍스트를 직접 지정**해야 합니다(기본값 없음). 예: `muse-task-20261128-1`.
-- `office_agents.id`는 타워 캐릭터 id와 맞춰 주세요: `seunghu`, `huhu`, `muse`, `gemini`, `cue`, `vooy`.
+- `office_agents.id`는 타워 캐릭터 id와 맞춰 주세요: `seunghu`(대장), `huhu`, `muse`, `gemini`, `cue`, `vooy`.
   일치하면 오피스 맵 캐릭터의 상태·하는 일 말풍선까지 실시간으로 갱신됩니다.
 
 **room 값**: `command`(지휘실) · `boardroom`(대회의실) · `lounge`(라운지)
 `conference`, `meeting`, `회의실`도 대회의실로 인식됩니다.
 
-**sender 값**: `후후`, `승후`, `뮤즈`, `제미나이`, `Cue`, `Vooy` (영문 id도 허용)
+**sender 값**: `대장`, `후후`, `뮤즈`, `제미나이`, `Cue`, `Vooy` (영문 id도 허용)
+예전 글에 남아 있는 `승후` / `승후님`도 같은 사람(`대장`)으로 인식되어 👑 아바타와 내 메시지 정렬이 유지됩니다. **새로 남기는 글은 `대장`을 쓰세요.**
 
 ---
 
@@ -137,7 +138,7 @@ curl -s -X POST "$SB_URL/rest/v1/office_agents" \
 curl -s -X PATCH "$SB_URL/rest/v1/office_agents?id=eq.gemini" \
   -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" \
   -H "Content-Type: application/json" -H "Prefer: return=representation" \
-  -d '{"status": "대기", "current_task": "키워드 점검 완료, 승후님 확인 대기"}'
+  -d '{"status": "대기", "current_task": "키워드 점검 완료, 대장님 확인 대기"}'
 ```
 
 ---
@@ -145,9 +146,10 @@ curl -s -X PATCH "$SB_URL/rest/v1/office_agents?id=eq.gemini" \
 ## 7. 에이전트 공통 대화 · 보고 규칙 (필수)
 
 1. **톡하듯이 짧게**: 회의실 답글은 장문 보고 대신 카톡하듯이 **2~4줄 이내, 요점 위주**로만 작성합니다.
-2. **일상 대화도 필수 응답**: 승후 님이 회의실에 올리는 글은 업무 안건뿐 아니라 일상 대화·잡담도 빠짐없이 짧게 대답합니다.
+2. **일상 대화도 필수 응답**: 대장님이 회의실에 올리는 글은 업무 안건뿐 아니라 일상 대화·잡담도 빠짐없이 짧게 대답합니다.
 3. **중복 보고 금지**: 대회의실(`office_messages`)에서 이미 말한 내용은 각 에이전트 1:1 채팅창에서 따로 다시 말하지 않습니다.
-4. **공통 금지**: 계정 직접 로그인·게시·좋아요·댓글 클릭은 승후 님 본인 폰(5G) 전용입니다.
+4. **공통 금지**: 계정 직접 로그인·게시·좋아요·댓글 클릭은 대장님 본인 폰(5G) 전용입니다.
+5. **호칭**: 대장님을 글에서 부를 때는 `승후` 대신 `대장` / `대장님`을 쓰세요.
 
 ---
 

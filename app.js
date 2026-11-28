@@ -52,7 +52,7 @@ const TINTS = ['#0284c7', '#06b6d4', '#d97706'];
 /* =========================================================
    캐릭터 아트 — 이모지 대신 쓰는 커스텀 어벤져스 SVG
    후후=캡틴 아메리카 · 뮤즈=아이언맨(풀 페이스 마스크) · Cue=토르
-   제미나이=닥터 스트레인지 · Vooy=헐크 · 승후=왕관+케이프 유지
+   제미나이=닥터 스트레인지 · Vooy=헐크 · 대장=왕관+케이프 유지
    좌표계 0 0 96 120 · 발(밑동)은 y=112, 바닥 그림자 y=116
    ========================================================= */
 const CHAR_ART = {
@@ -431,7 +431,12 @@ function roomTag(roomId) {
 }
 
 function highlightMentions(text) {
-  return esc(text).replace(/@(승후|후후|뮤즈|제미나이|Cue|Vooy)/g, '<span class="mention">@$1</span>');
+  /* 2026-11-28 호칭 변경: 과거 글 본문·멘션에 남은 '승후(님)'도 화면에서는 '대장(님)'으로 보여 준다.
+     DB 원본(office_messages.content)은 건드리지 않아 되돌리기 쉽다. */
+  const normalized = String(text == null ? '' : text)
+    .replace(/승후\s*님/g, '대장님')
+    .replace(/승후/g, '대장');
+  return esc(normalized).replace(/@(대장|후후|뮤즈|제미나이|Cue|Vooy)/g, '<span class="mention">@$1</span>');
 }
 
 /* ---------------- Supabase REST ---------------- */
@@ -479,7 +484,9 @@ const ROOM_ALIAS = {
   lounge: 'lounge', '라운지': 'lounge'
 };
 const SENDER_ALIAS = {
-  '후후': 'huhu', huhu: 'huhu', '승후': 'seunghu', seunghu: 'seunghu',
+  '후후': 'huhu', huhu: 'huhu',
+  /* 대장 = 예전 '승후'. 과거 행(sender: "승후")과 새 행(sender: "대장") 둘 다 같은 사람으로 묶는다 */
+  '대장': 'seunghu', '대장님': 'seunghu', '승후': 'seunghu', seunghu: 'seunghu',
   '뮤즈': 'muse', muse: 'muse', '제미나이': 'gemini', gemini: 'gemini',
   cue: 'cue', vooy: 'vooy'
 };
