@@ -142,10 +142,6 @@
       <div class="chip-row" id="chat-rooms" aria-label="회의실 방 필터"></div>
       <ul class="msg-list" id="msg-list" aria-live="polite"></ul>
 
-      <button class="chat-latest" id="chat-latest" type="button" hidden>
-        <span class="cl-ico" aria-hidden="true">↓</span><span class="cl-txt">최신</span><span class="cl-count" id="chat-latest-count" hidden></span>
-      </button>
-
       <form class="composer" id="chat-form" autocomplete="off">
         <div class="composer-panel" id="composer-panel" inert>
           <div class="composer-row">
@@ -271,6 +267,11 @@
       <ul class="memo-list" id="memo-list"></ul>
     </section>
   </main>
+
+  <!-- 위로 올려 옛 글을 볼 때만 뜨는 ↓ 최신 버튼 (화면 기준 고정) -->
+  <button class="chat-latest" id="chat-latest" type="button" hidden>
+    <span class="cl-ico" aria-hidden="true">↓</span><span class="cl-txt">최신</span><span class="cl-count" id="chat-latest-count" hidden></span>
+  </button>
 
   <script src="app.js?v=20261128-autoscroll"></script>
 </body>
