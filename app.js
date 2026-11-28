@@ -988,12 +988,15 @@ let chatJumpTimers = [];
 let chatBootJumped = false;     /* 첫 데이터 렌더에서 한 번은 무조건 바닥으로 */
 
 function chatScrollMax() {
-  const doc = document.documentElement;
-  return Math.max(0, doc.scrollHeight - window.innerHeight);
+  const box = el.msgList;
+  if (!box) return 0;
+  return Math.max(0, box.scrollHeight - box.clientHeight);
 }
 
 function chatIsAtBottom() {
-  return chatScrollMax() - window.scrollY <= CHAT_BOTTOM_SLACK;
+  const box = el.msgList;
+  if (!box) return true;
+  return box.scrollHeight - box.scrollTop - box.clientHeight <= CHAT_BOTTOM_SLACK;
 }
 
 function stopChatJump() {
@@ -1011,7 +1014,9 @@ function updateChatLatestBtn() {
 }
 
 function applyChatJump() {
-  window.scrollTo(0, chatScrollMax());
+  /* 스크롤은 window 가 아니라 #msg-list 안에서만 일어난다 */
+  const box = el.msgList;
+  if (box) box.scrollTop = box.scrollHeight;
   chatPinnedBottom = true;
   if (chatNewCount) chatNewCount = 0;
   updateChatLatestBtn();
@@ -1042,7 +1047,7 @@ function jumpChatToBottom() {
   }
 }
 
-/* 창 스크롤이 바닥에서 떨어지면 ↓ 최신 버튼을 띄운다 */
+/* 창 스크롤이 아니라 #msg-list 스크롤이 바닥에서 떨어지면 ↓ 최신 버튼을 띄운다 */
 function onChatScroll() {
   if (activeTab !== 'chat') return;
   const atBottom = chatIsAtBottom();
@@ -1055,10 +1060,29 @@ function onChatScroll() {
   updateChatLatestBtn();
 }
 
+/* 빈 방 안내 — 방마다 다른 문구로 '비어 있는 게 정상'으로 보이게 */
+const EMPTY_ROOM_COPY = {
+  all: { emoji: '🗂️', title: '아직 남긴 말이 없어요', sub: '비서들이 남긴 말이 여기 한데 모입니다.' },
+  boardroom: { emoji: '🏛️', title: '회의실이 조용하네요', sub: '첫 안건을 남겨 보세요. 이 방은 모두에게 보입니다.' },
+  team1: { emoji: '🛡️', title: '1팀 방이에요', sub: '후후 팀장·Cue가 일하는 방입니다. 첫 지시를 남겨 보세요.' },
+  team2: { emoji: '⚡', title: '2팀 방이에요', sub: '뮤즈·제미나이가 일하는 방입니다. 첫 지시를 남겨 보세요.' },
+  lounge: { emoji: '☕', title: '라운지가 조용하네요', sub: '일 얘기 말고 가벼운 한마디도 좋아요.' }
+};
+
+function emptyRoomHtml() {
+  const roomId = activeRoom === 'all' ? 'all' : activeRoom;
+  const copy = EMPTY_ROOM_COPY[roomId] || { emoji: '💬', title: '아직 남긴 말이 없어요', sub: '첫 메시지를 남기면 여기에 쌓입니다.' };
+  return `<li class="msg-empty">
+    <span class="me-emoji" aria-hidden="true">${esc(copy.emoji)}</span>
+    <b>${esc(copy.title)}</b>
+    <span class="me-sub">${esc(copy.sub)}</span>
+  </li>`;
+}
+
 function renderChat() {
   const msgs = allMessages().filter((m) => activeRoom === 'all' || m.room === activeRoom);
   if (!msgs.length) {
-    el.msgList.innerHTML = '<li class="msg-empty">아직 이 방에 남긴 말이 없어요.</li>';
+    el.msgList.innerHTML = emptyRoomHtml();
   } else {
     el.msgList.innerHTML = msgs.map((m) => {
       const c = m.authorId
@@ -1081,6 +1105,7 @@ function renderChat() {
       </li>`;
     }).join('');
   }
+  el.msgList.classList.toggle('is-empty', !msgs.length);
   const tail = msgs.length
     ? `${msgs[msgs.length - 1].id}|${msgs[msgs.length - 1].at}`
     : 'empty';
@@ -1259,6 +1284,15 @@ function setTab(tab, opts) {
   });
   write(KEY.tab, tab);
   try { history.replaceState(null, '', `#${tab}`); } catch (e) { /* ignore */ }
+  /* 회의실은 플렉스 셸 모드 — 페이지 스크롤을 잠그고 viewport 높이에 맞춘다 */
+  const chatMode = tab === 'chat';
+  document.documentElement.classList.toggle('chat-mode', chatMode);
+  document.body.classList.toggle('chat-mode', chatMode);
+  if (chatMode) {
+    syncAppViewport();
+  } else {
+    window.scrollTo(0, 0);
+  }
   if (!opts || opts.scroll !== false) {
     /* 회의실은 카톡처럼 열자마자 최신 메시지(맨 아래) — 다른 탭은 위에서부터 */
     if (tab !== 'chat') window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1334,7 +1368,8 @@ el.chatRooms.addEventListener('click', (e) => {
   jumpChatToBottom();
 });
 
-window.addEventListener('scroll', onChatScroll, { passive: true });
+window.addEventListener('resize', scheduleKeyboardLayout);
+if (el.msgList) el.msgList.addEventListener('scroll', onChatScroll, { passive: true });
 
 if (el.chatLatest) {
   el.chatLatest.addEventListener('click', () => {
@@ -1685,6 +1720,25 @@ function keyboardInset() {
   return Math.max(0, Math.round(layoutH - vv.height - vv.offsetTop));
 }
 
+/* 회의실 플렉스 셸(.app-shell)을 지금 보이는 영역(visualViewport)에 정확히 맞춘다.
+   iOS Safari 는 키보드가 올라와도 layout viewport 를 그대로 두므로, 셸의 top/height 를
+   vv.offsetTop / vv.height 로 실시간 동기화해야 입력창이 화면 한가운데 붕 뜨지 않는다. */
+function syncAppViewport() {
+  const root = document.documentElement;
+  const vv = window.visualViewport;
+  const layoutH = window.innerHeight || root.clientHeight || 0;
+  if (!vv) {
+    root.style.setProperty('--app-h', `${layoutH}px`);
+    root.style.setProperty('--vv-top', '0px');
+    return 0;
+  }
+  root.style.setProperty('--app-h', `${Math.round(vv.height)}px`);
+  root.style.setProperty('--vv-top', `${Math.round(vv.offsetTop)}px`);
+  const inset = keyboardInset();
+  root.style.setProperty('--kb-inset', `${inset}px`);
+  return inset;
+}
+
 function composerFocused() {
   const a = document.activeElement;
   return !!(a && el.chatForm && el.chatForm.contains(a) && /^(TEXTAREA|INPUT)$/.test(a.tagName));
@@ -1692,15 +1746,17 @@ function composerFocused() {
 
 function applyKeyboardLayout() {
   kbSyncFrame = 0;
-  const inset = keyboardInset();
-  document.documentElement.style.setProperty('--kb-inset', `${inset}px`);
+  const inset = syncAppViewport();
   const open = inset > KEYBOARD_MIN || (composerFocused() && inset > 50);
   const changed = open !== kbOpen;
   kbOpen = open;
   document.body.classList.toggle('keyboard-open', open);
-  if (!changed) return;
-  if (open) setComposerOpen(true);
-  if (activeTab === 'chat') jumpChatToBottom();
+  /* Safari 가 포커스 때 밀어 올린 페이지 스크롤을 되돌려 셸과 어긋나지 않게 한다 */
+  if (open && activeTab === 'chat' && window.scrollY) window.scrollTo(0, 0);
+  if (changed) {
+    if (open) setComposerOpen(true);
+    if (activeTab === 'chat') jumpChatToBottom();
+  }
 }
 
 function scheduleKeyboardLayout() {
@@ -1742,6 +1798,15 @@ function boot() {
     window.visualViewport.addEventListener('scroll', scheduleKeyboardLayout);
   }
   window.addEventListener('orientationchange', () => setTimeout(applyKeyboardLayout, 250));
+  /* 입력창 펼침·키보드·창 크기로 스크롤 영역 높이가 바뀌어도 바닥을 보던 중이면 맨 아래 유지 */
+  if (window.ResizeObserver) {
+    const keepBottom = () => {
+      if (activeTab === 'chat' && chatPinnedBottom) applyChatJump();
+    };
+    const ro = new ResizeObserver(keepBottom);
+    if (el.msgList) ro.observe(el.msgList);
+    if (el.chatForm) ro.observe(el.chatForm);
+  }
   applyKeyboardLayout();
 }
 

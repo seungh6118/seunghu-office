@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
   <meta name="theme-color" content="#EEF5FE" />
   <meta name="color-scheme" content="light" />
   <meta name="description" content="대장 전용 어벤져스타워 — 오피스 맵, 회의실, 성과실, 제작실, 작업실, 비서현황, 메모 (Supabase 실시간 동기화)" />
@@ -11,9 +11,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="어벤져스타워" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <link rel="stylesheet" href="styles.css?v=20261128-teams" />
+  <link rel="stylesheet" href="styles.css?v=20261128-chatfix" />
 </head>
 <body>
+  <div class="app-shell" id="app-shell">
   <header class="app-header">
     <div class="header-inner">
       <div class="brand">
@@ -132,15 +133,23 @@
       </div>
     </section>
 
-    <!-- 회의실 -->
-    <section class="view" id="view-chat" data-view="chat" role="tabpanel" aria-labelledby="chat-title" hidden>
-      <div class="view-head">
-        <h2 id="chat-title">회의실</h2>
-        <p>비서들이 모여 오늘 할 일을 맞추는 방이에요.</p>
+    <!-- 회의실 — 플렉스 셸(상단 고정 · 가운데만 스크롤 · 입력창 하단 고정) -->
+    <section class="view chat-view" id="view-chat" data-view="chat" role="tabpanel" aria-labelledby="chat-title" hidden>
+      <div class="chat-top">
+        <div class="view-head">
+          <h2 id="chat-title">회의실</h2>
+          <p>비서들이 모여 오늘 할 일을 맞추는 방이에요.</p>
+        </div>
+        <div class="chip-row" id="chat-rooms" aria-label="회의실 방 필터"></div>
       </div>
 
-      <div class="chip-row" id="chat-rooms" aria-label="회의실 방 필터"></div>
-      <ul class="msg-list" id="msg-list" aria-live="polite"></ul>
+      <div class="chat-list-wrap">
+        <ul class="msg-list" id="msg-list" aria-live="polite"></ul>
+        <!-- 위로 올려 옛 글을 볼 때만 뜨는 ↓ 최신 버튼 (말풍선 영역 기준, 입력창과 겹치지 않음) -->
+        <button class="chat-latest" id="chat-latest" type="button" hidden>
+          <span class="cl-ico" aria-hidden="true">↓</span><span class="cl-txt">최신</span><span class="cl-count" id="chat-latest-count" hidden></span>
+        </button>
+      </div>
 
       <form class="composer" id="chat-form" autocomplete="off">
         <div class="composer-panel" id="composer-panel" inert>
@@ -269,11 +278,7 @@
       <ul class="memo-list" id="memo-list"></ul>
     </section>
   </main>
-
-  <!-- 위로 올려 옛 글을 볼 때만 뜨는 ↓ 최신 버튼 (화면 기준 고정) -->
-  <button class="chat-latest" id="chat-latest" type="button" hidden>
-    <span class="cl-ico" aria-hidden="true">↓</span><span class="cl-txt">최신</span><span class="cl-count" id="chat-latest-count" hidden></span>
-  </button>
+  </div><!-- /.app-shell -->
 
   <!-- 성과실 · 제작실 전용 바텀시트 -->
   <div class="zone-backdrop" id="zone-backdrop" hidden></div>
@@ -290,6 +295,6 @@
     <div class="zone-body" id="zone-body"></div>
   </section>
 
-  <script src="app.js?v=20261128-teams"></script>
+  <script src="app.js?v=20261128-chatfix"></script>
 </body>
 </html>

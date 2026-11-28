@@ -124,10 +124,10 @@ DB가 막힌 환경에서만 쓰이는 보조 저장소입니다.
 2. **회의실** — 전체·회의실·🛡️ 1팀·⚡ 2팀·라운지 필터(지휘실 폐지), 보내는 사람·@멘션 한 줄 스트립, 메시지 전송 → Supabase 실시간 공유(LIVE 표시)
    - 팀 구성: **1팀 = 후후(팀장) + Cue**, **2팀 = 뮤즈(팀장) + Vooy**. 팀방은 `room: "team1" / "team2"` 로 저장됩니다.
    - 예전 `command`(지휘실) 로 남은 DB 로그는 `boardroom`(회의실)으로 매핑되어 그대로 보입니다.
-   - iOS Safari 키보드가 올라오면 `body.keyboard-open` 으로 하단 탭바를 숨기고 입력 바를 `visualViewport` 하단(키보드 위)에 고정합니다. `.view` 의 `view-in` 애니메이션이 fixed 기준을 잡지 않도록 `#view-chat` 는 애니메이션을 끕니다.
+   - **레이아웃(2026-11-28 플렉스 개편)** — 회의실 탭이 열리면 `html/body.chat-mode` 로 페이지 스크롤을 잠그고, `header.tabbar/main` 을 감싼 `.app-shell` 을 `visualViewport` 크기(`--app-h`/`--vv-top`)에 맞춰 고정합니다. 셸은 `display:flex; flex-direction:column` 이고 상단(헤더·방칩)과 하단(`.composer` → `.tabbar`)은 `flex-shrink:0`, 가운데 `#msg-list` 만 `flex:1; min-height:0; overflow-y:auto` 로 스크롤합니다. 입력창은 `position: relative` 이며 `fixed` 를 쓰지 않습니다. iOS Safari 키보드가 올라오면 `body.keyboard-open` 으로 탭바를 숨기고, `visualViewport` 의 `resize/scroll` 마다 셸 높이·`offsetTop` 을 다시 맞춰(`window.scrollTo(0,0)` 로 Safari 가 밀어 올린 스크롤 차단) 입력창이 항상 키보드 바로 위에 붙습니다.
    - **성과실·제작실** — 지도 라벨·상단 칩을 누르면 전용 바텀시트(`#zone-sheet`)가 열립니다(회의실 이동 아님).
-   - **진입·방 전환·방 필터·전송 직후에는 항상 최신 메시지(맨 아래)로 열립니다**(카톡식). `jumpChatToBottom` 이 rAF 2회 + 80/240/600ms + `document.fonts.ready` 로 모바일 레이아웃까지 보정합니다.
-   - 사용자가 위로 올려 옛 글을 읽는 중에는 45초 폴링으로 화면을 끌어내리지 않고, 우측 하단 `↓ 최신` 버튼(`#chat-latest`)에 새 글 개수만 표시합니다. 이 버튼은 `.view` 의 `view-in` 애니메이션이 `position: fixed` 기준을 잡아먹지 않도록 **body 직속**에 둡니다(안으로 옮기면 화면 밖으로 사라집니다).
+   - **진입·방 전환·방 필터·전송 직후에는 항상 최신 메시지(맨 아래)로 열립니다**(카톡식). `jumpChatToBottom` 이 `#msg-list.scrollTop` 을 바닥에 붙이고 rAF 2회 + 80/240/600ms + `document.fonts.ready` 로 모바일 레이아웃까지 보정합니다. `ResizeObserver` 가 입력창 펼침·키보드로 스크롤 영역 높이가 바뀌어도 바닥을 유지합니다.
+   - 사용자가 위로 올려 옛 글을 읽는 중에는 45초 폴링으로 화면을 끌어내리지 않고, `#msg-list` 우측 하단 `↓ 최신` 버튼(`#chat-latest`)에 새 글 개수만 표시합니다. 버튼은 스크롤 영역(`.chat-list-wrap`) 안에 `position:absolute` 로 들어가 입력창과 겹치지 않습니다.
 3. **작업실** — 진행 프로젝트 카드 + 새 작업 지시 추가(Supabase 저장)
 4. **비서현황** — 후후·뮤즈·제미나이·Cue·Vooy 상태 카드, 스케줄 타임라인, 외부 에이전트 연동 안내
 5. **메모** — 빠른 메모 추가·삭제·핀 고정(Supabase 저장)
