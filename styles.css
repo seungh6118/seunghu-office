@@ -905,23 +905,45 @@ picture { display: block; }
   box-shadow: 0 -22px 46px -30px rgba(13, 58, 110, .85), 0 1px 0 #fff inset;
 }
 
-/* 접힌 상태: 선택 패널과 안내 문구를 완전히 감춰 메시지가 화면을 넓게 씀 */
+/* 접힌 상태: 선택 패널과 안내 문구를 완전히 감춰 메시지가 화면을 넓게 씀
+   2026-11-28: 보내는 사람 · @멘션을 한 줄 가로 스크롤 스트립으로 합쳐 높이를 절반으로 */
 .composer-panel {
-  display: grid;
-  gap: 7px;
+  display: block;
   max-height: 0;
   opacity: 0;
   overflow: hidden;
   padding: 0 4px;
-  transition: max-height .24s ease, opacity .18s ease, padding .24s ease;
+  transition: max-height .2s ease, opacity .16s ease, padding .2s ease;
 }
 .composer.is-open .composer-panel {
-  max-height: 190px;
+  max-height: 46px;
   opacity: 1;
-  padding: 4px 4px 2px;
+  padding: 2px 2px 1px;
 }
+.composer-strip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  padding: 2px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.composer-strip::-webkit-scrollbar { display: none; }
+.composer-strip .sender-chips,
+.composer-strip .mention-chips { flex: 0 0 auto; overflow: visible; }
 .composer-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.composer-label { flex: 0 0 auto; font-size: 10px; font-weight: 700; color: var(--text-3); }
+.composer-label {
+  flex: 0 0 auto;
+  font-size: 9.5px;
+  font-weight: 750;
+  letter-spacing: -.01em;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.composer-sep { flex: 0 0 auto; width: 1px; height: 15px; margin: 0 2px; background: var(--hair-2); opacity: .7; }
 .sender-chips,
 .mention-chips {
   display: flex;
@@ -941,19 +963,19 @@ picture { display: block; }
 .sender-chip,
 .mention-chip {
   flex: 0 0 auto;
-  height: 30px;
-  min-height: 30px;
-  padding: 0 11px;
+  height: 26px;
+  min-height: 26px;
+  padding: 0 10px;
   border-radius: 999px;
   border: 1px solid var(--hair);
   background: #ffffff;
   color: var(--text-2);
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: -.01em;
   white-space: nowrap;
 }
-.mention-chip { border-style: dashed; border-color: rgba(2, 132, 199, .35); font-size: 11px; }
+.mention-chip { border-style: dashed; border-color: rgba(2, 132, 199, .35); font-size: 10.5px; }
 .sender-chip.is-active {
   background: linear-gradient(180deg, rgba(2, 132, 199, .16), rgba(2, 132, 199, .07));
   border-color: rgba(2, 132, 199, .45);
@@ -1566,3 +1588,212 @@ picture { display: block; }
   .app-main { max-width: 1240px; }
   .header-inner { max-width: 1240px; }
 }
+
+/* =========================================================
+   2026-11-28 · 성과실 · 제작실 + iOS 키보드 레이아웃 보정
+   ========================================================= */
+
+/* ---------------- 존 칩·라벨 (현황판으로 열림) ---------------- */
+.chip.is-zone { border-color: rgba(2, 132, 199, .3); background: linear-gradient(180deg, #ffffff, #f3faff); }
+.chip.is-zone:active { border-color: rgba(2, 132, 199, .55); }
+.room-label.is-zone { border-color: rgba(217, 119, 6, .34); color: #7c3f06; }
+.room-label.is-zone .room-emoji { filter: saturate(1.05); }
+
+/* ---------------- 성과실 · 제작실 바텀시트 ---------------- */
+body.zone-open { overflow: hidden; }
+.zone-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(8, 30, 55, .34);
+  -webkit-backdrop-filter: blur(3px) saturate(120%);
+  backdrop-filter: blur(3px) saturate(120%);
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+.zone-backdrop[hidden] { display: none; }
+.zone-backdrop.is-open { opacity: 1; }
+
+.zone-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 71;
+  display: flex;
+  flex-direction: column;
+  max-height: min(86vh, 760px);
+  padding-bottom: env(safe-area-inset-bottom);
+  border: 1px solid rgba(2, 132, 199, .2);
+  border-bottom: 0;
+  border-radius: 24px 24px 0 0;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fcff 48%, #eef5fe 100%);
+  box-shadow: 0 -34px 64px -34px rgba(13, 58, 110, .65), 0 1px 0 #fff inset;
+  transform: translateY(104%);
+  transition: transform .28s cubic-bezier(.22, .72, .2, 1);
+}
+.zone-sheet[hidden] { display: none; }
+.zone-sheet.is-open { transform: none; }
+.zone-grip {
+  width: 42px;
+  height: 4px;
+  margin: 8px auto 2px;
+  border-radius: 999px;
+  background: rgba(13, 63, 110, .2);
+}
+.zone-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px 12px;
+  border-bottom: 1px solid var(--hair);
+}
+.zone-emoji {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  border: 1px solid var(--hair-2);
+  background: linear-gradient(180deg, #ffffff, #e8f3ff);
+  font-size: 20px;
+}
+.zone-id { flex: 1; min-width: 0; }
+.zone-id h2 { font-size: 17px; font-weight: 850; letter-spacing: -.03em; color: #08243f; }
+.zone-id p { font-size: 11.5px; color: var(--text-3); margin-top: 2px; }
+.zone-close {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  border: 1px solid var(--hair);
+  background: #ffffff;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 700;
+}
+.zone-close:active { background: #eef6ff; }
+.zone-body {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 14px 24px;
+}
+.zone-note { font-size: 11.5px; line-height: 1.5; color: var(--text-3); padding: 0 2px 9px; }
+.zone-list { display: grid; gap: 10px; }
+.zone-card {
+  position: relative;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid var(--hair);
+  border-radius: 18px;
+  padding: 13px 14px 12px;
+  box-shadow: var(--shadow);
+}
+.zone-card::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--accent, #0284c7);
+  opacity: .9;
+}
+.zone-card-head { display: flex; align-items: center; gap: 10px; }
+.zc-emoji {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  border: 1px solid var(--hair);
+  background: #f4f9ff;
+  font-size: 17px;
+}
+.zc-id { flex: 1; min-width: 0; }
+.zc-id h3 { font-size: 14px; font-weight: 850; letter-spacing: -.02em; color: #0a2b49; }
+.zc-id p {
+  font-size: 10.5px;
+  color: var(--text-3);
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.zc-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(56px, 1fr));
+  gap: 6px;
+  margin-top: 10px;
+}
+.zc-metric {
+  padding: 7px 6px;
+  border-radius: 12px;
+  border: 1px solid var(--hair);
+  background: #f5faff;
+  text-align: center;
+}
+.zc-metric b {
+  display: block;
+  font-size: 15px;
+  font-weight: 850;
+  letter-spacing: -.03em;
+  color: #0a2b49;
+  font-variant-numeric: tabular-nums;
+}
+.zc-metric span { display: block; font-size: 9.5px; color: var(--text-3); margin-top: 1px; }
+.zc-note { font-size: 11.5px; line-height: 1.55; color: var(--text-2); margin-top: 9px; }
+.zc-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
+.zc-tag {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--blue-ink);
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 999px;
+  padding: 1px 7px;
+}
+.zc-link { display: inline-block; margin-top: 9px; font-size: 11.5px; font-weight: 800; color: var(--blue); }
+
+/* 태블릿·데스크톱에서는 가운데 카드로 */
+@media (min-width: 640px) {
+  .zone-sheet {
+    left: 50%;
+    right: auto;
+    bottom: 20px;
+    width: min(560px, 92vw);
+    max-height: min(80vh, 720px);
+    border-radius: 24px;
+    border-bottom: 1px solid rgba(2, 132, 199, .2);
+    transform: translate(-50%, 104%);
+  }
+  .zone-sheet.is-open { transform: translateX(-50%); }
+}
+
+/* ---------------- 채팅 리스트 하단 여백 ---------------- */
+#view-chat .msg-list { padding-bottom: 18px; }
+
+/* ---------------- iOS Safari 키보드: 탭바 숨김 + 입력 바를 키보드 위에 ---------------- */
+body.keyboard-open { --tabbar-h: 0px; }
+body.keyboard-open .tabbar { display: none; }
+body.keyboard-open .chat-latest { display: none; }
+/* .view 의 view-in 애니메이션이 position: fixed 기준(containing block)을 잡지 않게 */
+body.keyboard-open #view-chat,
+body.keyboard-open #view-chat.view.is-active { animation: none; transform: none; }
+body.keyboard-open .composer {
+  position: fixed;
+  left: max(8px, env(safe-area-inset-left));
+  right: max(8px, env(safe-area-inset-right));
+  bottom: calc(var(--kb-inset, 0px) + 6px);
+  z-index: 60;
+  max-width: 1104px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 0;
+}
+/* 키보드와 입력 바 사이 흰 띠는 키보드 위에 뜨므로 감춘다 */
+body.keyboard-open .composer::after { display: none; }
+/* 키보드가 올라온 동안에는 고정된 입력 바가 마지막 말풍선을 덮지 않도록 여백 확보.
+   키보드 높이(--kb-inset)만큼 더 주어야 바닥까지 스크롤했을 때 마지막 말풍선이
+   입력 바 위(키보드 바로 위)에 보인다. */
+body.keyboard-open #view-chat .msg-list { padding-bottom: calc(var(--kb-inset, 0px) + 130px); }

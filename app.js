@@ -385,7 +385,8 @@ const el = {};
   'chat-latest', 'chat-latest-count',
   'sender-chips', 'sender-toggle', 'sender-toggle-emoji', 'sender-toggle-name', 'composer-panel',
   'project-list', 'task-form', 'task-emoji', 'task-title', 'task-next', 'task-status', 'task-owner',
-  'agent-cards', 'schedule-list', 'memo-form', 'memo-input', 'memo-list'
+  'agent-cards', 'schedule-list', 'memo-form', 'memo-input', 'memo-list',
+  'view-chat', 'zone-sheet', 'zone-backdrop', 'zone-body', 'zone-title', 'zone-sub', 'zone-emoji', 'zone-close'
 ].forEach(id => {
   el[id.replace(/-([a-z])/g, (_, c) => c.toUpperCase())] = document.getElementById(id);
 });
@@ -478,12 +479,20 @@ const sbPatch = (table, id, row) => sbFetch(`${table}?id=eq.${encodeURIComponent
 });
 const sbRemove = (table, id) => sbFetch(`${table}?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE' });
 
-/* 방·발신자 이름을 앱 내부 id로 정규화 */
+/* 방·발신자 이름을 앱 내부 id로 정규화
+   2026-11-28: 지휘실(command) 폐지 — 회의실에서 바로 회의하며 지휘한다.
+   예전 command 로 남은 DB 로그는 boardroom(=회의실)으로 묶어 '전체'·'회의실' 필터에서 유실 없이 보이게 한다. */
 const ROOM_ALIAS = {
-  command: 'command', '지휘실': 'command',
+  command: 'boardroom', '지휘실': 'boardroom', 지휘실: 'boardroom', '지휘': 'boardroom',
   boardroom: 'boardroom', conference: 'boardroom', meeting: 'boardroom', '대회의실': 'boardroom', '회의실': 'boardroom',
+  performance: 'performance', '성과실': 'performance',
+  workshop: 'workshop', '제작실': 'workshop',
   lounge: 'lounge', '라운지': 'lounge'
 };
+
+/* 회의실 탭이 아니라 전용 현황판(바텀시트)으로 열리는 존 */
+const ZONE_IDS = ['performance', 'workshop'];
+const isZoneRoom = (id) => ZONE_IDS.indexOf(String(id == null ? '' : id)) >= 0;
 const SENDER_ALIAS = {
   '후후': 'huhu', huhu: 'huhu',
   /* 대장 = 예전 '승후'. 과거 행(sender: "승후")과 새 행(sender: "대장") 둘 다 같은 사람으로 묶는다 */
@@ -722,7 +731,9 @@ function renderRoomChips() {
   ].concat(rooms.map((r) => {
     const on = r.state === 'on';
     const sel = selected && selected.type === 'room' && selected.id === r.id;
-    return `<button class="chip ${sel ? 'is-active' : ''}" type="button" data-room-jump="${esc(r.id)}">
+    const zone = isZoneRoom(r.id);
+    const attr = zone ? `data-zone="${esc(r.id)}"` : `data-room-jump="${esc(r.id)}"`;
+    return `<button class="chip ${sel ? 'is-active' : ''} ${zone ? 'is-zone' : ''}" type="button" ${attr}>
       <span class="dot ${on ? '' : 'is-idle'}"></span>${esc(r.emoji)} ${esc(r.name)}
       <span class="chip-sub">${esc(r.status)}</span>
     </button>`;
@@ -735,9 +746,12 @@ function renderMap() {
 
   el.roomLabels.innerHTML = (state.rooms || []).map((r) => {
     const sel = selected && selected.type === 'room' && selected.id === r.id;
-    return `<button class="room-label ${sel ? 'is-selected' : ''}" type="button"
-      data-room="${esc(r.id)}" style="left:${Number(r.x)}%;top:${Number(r.y)}%"
-      aria-label="${esc(r.emoji)} ${esc(r.name)} — 회의실에서 보기" title="${esc(r.name)} 회의실로 이동">
+    const zone = isZoneRoom(r.id);
+    const attr = zone ? `data-zone="${esc(r.id)}"` : `data-room="${esc(r.id)}"`;
+    const hint = zone ? `${esc(r.name)} 현황판 열기` : `${esc(r.name)} 회의실로 이동`;
+    return `<button class="room-label ${sel ? 'is-selected' : ''} ${zone ? 'is-zone' : ''}" type="button"
+      ${attr} style="left:${Number(r.x)}%;top:${Number(r.y)}%"
+      aria-label="${esc(r.emoji)} ${esc(r.name)} — ${hint}" title="${hint}">
       <span class="room-emoji" aria-hidden="true">${esc(r.emoji)}</span><span class="room-name">${esc(r.name)}</span>
     </button>`;
   }).join('');
@@ -797,7 +811,9 @@ function renderDetail() {
         <div class="detail-row"><span class="k">이 방에서</span><span class="v">${(r.work || []).map((w) => `· ${esc(w)}`).join('<br>') || '—'}</span></div>
         <div class="detail-row"><span class="k">자리</span><span class="v">${members.length ? members.map((m) => `${esc(m.emoji)} ${esc(m.name)}`).join(' · ') : '비어 있음'}</span></div>
       </div>
-      <button class="detail-jump" type="button" data-open-room="${esc(r.id)}">${esc(r.emoji)} ${esc(r.name)} 회의실에서 보기 →</button>`;
+      ${isZoneRoom(r.id)
+        ? `<button class="detail-jump" type="button" data-zone="${esc(r.id)}">${esc(r.emoji)} ${esc(r.name)} 현황판 열기 →</button>`
+        : `<button class="detail-jump" type="button" data-open-room="${esc(r.id)}">${esc(r.emoji)} ${esc(r.name)} 회의실에서 보기 →</button>`}`;
   }
   el.mapDetail.hidden = false;
 }
@@ -815,7 +831,14 @@ function selectOnMap(type, id, scroll) {
 /* 지도 위 방 핀·라벨, 상단 상태 칩을 누르면 회의실 탭에서 그 방 필터로 바로 이동 */
 function openRoomInChat(roomId) {
   const id = String(roomId == null ? '' : roomId).trim();
-  if (!(state.rooms || []).some((r) => r.id === id)) return;
+  const room = (state.rooms || []).find((r) => r.id === id);
+  if (!room) return;
+  /* 성과실·제작실은 회의실 필터가 아니라 전용 현황판(바텀시트)으로 연다 */
+  if (isZoneRoom(id)) {
+    selectOnMap('room', id, false);
+    openZoneSheet(id);
+    return;
+  }
   activeRoom = id;
   write(KEY.room, activeRoom);
   selected = { type: 'room', id };
@@ -886,7 +909,10 @@ function autoGrowComposer() {
 function setComposerOpen(open) {
   if (!el.chatForm) return;
   const isOpen = !!open;
+  const wasOpen = el.chatForm.classList.contains('is-open');
   el.chatForm.classList.toggle('is-open', isOpen);
+  /* 펼친 만큼 마지막 말풍선이 가리지 않도록 화면 하단 여백을 늘린다 */
+  if (el.viewChat) el.viewChat.classList.toggle('is-composer-open', isOpen);
   if (el.senderToggle) el.senderToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
   /* 접힌 동안엔 패널 안 칩을 탭·탭키 대상에서 뺀다 */
   if (el.composerPanel) el.composerPanel.inert = !isOpen;
@@ -895,6 +921,7 @@ function setComposerOpen(open) {
   } else {
     autoGrowComposer();
   }
+  if (isOpen && !wasOpen && activeTab === 'chat') jumpChatToBottom();
 }
 
 /* 칩 선택 뒤 입력창으로 돌아갈 때 패널이 다시 펼쳐지지 않게 */
@@ -930,7 +957,8 @@ function renderComposer() {
 }
 
 function renderChatRooms() {
-  const rooms = state.rooms || [];
+  /* 성과실·제작실은 대화방이 아니므로 필터에서 제외 (전용 현황판으로 열림) */
+  const rooms = (state.rooms || []).filter((r) => !isZoneRoom(r.id));
   const items = [{ id: 'all', name: '전체', emoji: '🗂️' }].concat(rooms);
   el.chatRooms.innerHTML = items.map((r) => `
     <button class="chip ${activeRoom === r.id ? 'is-active' : ''}" type="button" data-chat-room="${esc(r.id)}">
@@ -1250,6 +1278,8 @@ el.roomChips.addEventListener('click', (e) => {
     renderMap();
     return;
   }
+  const zone = e.target.closest('[data-zone]');
+  if (zone) { openRoomInChat(zone.dataset.zone); return; }
   const jump = e.target.closest('[data-room-jump]');
   if (jump) { openRoomInChat(jump.dataset.roomJump); }
 });
@@ -1257,11 +1287,15 @@ el.roomChips.addEventListener('click', (e) => {
 el.mapStage.addEventListener('click', (e) => {
   const char = e.target.closest('[data-char]');
   if (char) { selectOnMap('char', char.dataset.char, true); return; }
+  const zone = e.target.closest('[data-zone]');
+  if (zone) { openRoomInChat(zone.dataset.zone); return; }
   const room = e.target.closest('[data-room]');
   if (room) openRoomInChat(room.dataset.room);
 });
 
 el.mapDetail.addEventListener('click', (e) => {
+  const zone = e.target.closest('[data-zone]');
+  if (zone) { openRoomInChat(zone.dataset.zone); return; }
   const jump = e.target.closest('[data-open-room]');
   if (jump) { openRoomInChat(jump.dataset.openRoom); return; }
   if (e.target.closest('[data-close-detail]')) {
@@ -1311,7 +1345,9 @@ if (el.senderChips) {
 
 el.chatInput.addEventListener('focus', () => {
   if (!composerSuppressOpen) setComposerOpen(true);
+  scheduleKeyboardLayout();
 });
+el.chatInput.addEventListener('blur', scheduleKeyboardLayout);
 el.chatInput.addEventListener('input', autoGrowComposer);
 el.chatInput.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
@@ -1507,6 +1543,161 @@ el.memoList.addEventListener('click', async (e) => {
   }
 });
 
+/* ---------------- 성과실 · 제작실 (전용 바텀시트) ----------------
+   지휘실을 없애고 만든 두 존. 지도 라벨·상단 칩을 누르면 이 시트가 열려
+   채널별 성과(성과실)/외주·프로그램 제작 현황(제작실)을 한눈에 본다. */
+let zoneOpenId = null;
+let zoneLastFocus = null;
+
+const ZONE_META = {
+  performance: { emoji: '📊', sub: '채널별 최신 성과 — 한눈에' },
+  workshop: { emoji: '🛠️', sub: '클로드 외주 · 프로그램 제작 현황' }
+};
+
+function zoneRoom(id) {
+  return (state && (state.rooms || []).find((r) => r.id === id)) || { id, name: id, emoji: '📊', summary: '' };
+}
+
+function zoneNoteText(id) {
+  const data = id === 'performance' ? (state && state.performance) : (state && state.workshop);
+  return (data && data.note) || '';
+}
+
+function perfCard(c) {
+  const metrics = (c.metrics || []).map((m) => `
+      <div class="zc-metric"><b>${esc(m.v)}</b><span>${esc(m.k)}</span></div>`).join('');
+  const pillCls = /워밍업|직할|준비/.test(String(c.status || '')) ? 'is-idle' : 'is-on';
+  return `<article class="zone-card" style="--accent:${esc(c.accent || '#0284c7')}">
+    <div class="zone-card-head">
+      <span class="zc-emoji" aria-hidden="true">${esc(c.emoji || '📊')}</span>
+      <div class="zc-id">
+        <h3>${esc(c.name)}</h3>
+        <p>${esc(c.handle || '')}${c.owner ? ` · ${esc(c.owner)} 담당` : ''}</p>
+      </div>
+      <span class="pill ${pillCls}">${esc(c.status || '')}</span>
+    </div>
+    ${metrics ? `<div class="zc-metrics">${metrics}</div>` : ''}
+    ${c.note ? `<p class="zc-note">${esc(c.note)}</p>` : ''}
+    ${c.link ? `<a class="zc-link" href="${esc(c.link)}" target="_blank" rel="noopener">발행 글 보기 →</a>` : ''}
+  </article>`;
+}
+
+function workshopCard(p) {
+  const tags = (p.stack || []).map((t) => `<span class="zc-tag">${esc(t)}</span>`).join('');
+  return `<article class="zone-card" style="--accent:${esc(p.accent || '#0284c7')}">
+    <div class="zone-card-head">
+      <span class="zc-emoji" aria-hidden="true">${esc(p.emoji || '🛠️')}</span>
+      <div class="zc-id">
+        <h3>${esc(p.name)}</h3>
+        <p>${esc(p.handle || '')}${p.owner ? ` · ${esc(p.owner)}` : ''}</p>
+      </div>
+      <span class="pill is-on">${esc(p.status || '')}</span>
+    </div>
+    ${tags ? `<div class="zc-tags">${tags}</div>` : ''}
+    ${p.note ? `<p class="zc-note">${esc(p.note)}</p>` : ''}
+    ${p.link ? `<a class="zc-link" href="${esc(p.link)}" target="_blank" rel="noopener">사이트 열기 →</a>` : ''}
+  </article>`;
+}
+
+function renderZoneSheet(id) {
+  if (!el.zoneBody) return;
+  const room = zoneRoom(id);
+  const meta = ZONE_META[id] || ZONE_META.performance;
+  if (el.zoneEmoji) el.zoneEmoji.textContent = room.emoji || meta.emoji;
+  if (el.zoneTitle) el.zoneTitle.textContent = room.name;
+  if (el.zoneSub) el.zoneSub.textContent = meta.sub;
+  const data = id === 'performance' ? (state && state.performance) : (state && state.workshop);
+  const list = id === 'performance'
+    ? ((data && data.channels) || []).map(perfCard).join('')
+    : ((data && data.projects) || []).map(workshopCard).join('');
+  const note = zoneNoteText(id);
+  el.zoneBody.innerHTML = `${note ? `<p class="zone-note">${esc(note)}</p>` : ''}
+    <div class="zone-list">${list || '<p class="zone-note">표시할 카드가 아직 없어요.</p>'}</div>`;
+}
+
+function openZoneSheet(id) {
+  if (!ZONE_IDS.includes(id) || !el.zoneSheet) return;
+  zoneLastFocus = document.activeElement;
+  zoneOpenId = id;
+  renderZoneSheet(id);
+  el.zoneSheet.hidden = false;
+  if (el.zoneBackdrop) el.zoneBackdrop.hidden = false;
+  document.body.classList.add('zone-open');
+  /* 두 프레임 뒤에 슬라이드 인 (display:none → 애니메이션 적용) */
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      el.zoneSheet.classList.add('is-open');
+      if (el.zoneBackdrop) el.zoneBackdrop.classList.add('is-open');
+    });
+  });
+  if (el.zoneBody) el.zoneBody.scrollTop = 0;
+  if (el.zoneClose) el.zoneClose.focus({ preventScroll: true });
+}
+
+function closeZoneSheet() {
+  if (!zoneOpenId || !el.zoneSheet) return;
+  zoneOpenId = null;
+  el.zoneSheet.classList.remove('is-open');
+  if (el.zoneBackdrop) el.zoneBackdrop.classList.remove('is-open');
+  document.body.classList.remove('zone-open');
+  const finish = () => {
+    if (zoneOpenId) return;           /* 그새 다른 존을 열었으면 그대로 둔다 */
+    el.zoneSheet.hidden = true;
+    if (el.zoneBackdrop) el.zoneBackdrop.hidden = true;
+  };
+  setTimeout(finish, 260);
+  if (zoneLastFocus && typeof zoneLastFocus.focus === 'function') {
+    zoneLastFocus.focus({ preventScroll: true });
+  }
+  zoneLastFocus = null;
+}
+
+/* ---------------- iOS Safari 키보드 · 하단 레이아웃 보정 ----------------
+   입력창을 누르면 키보드가 올라오는데 layout viewport 는 그대로라
+   position: fixed 하단 탭바가 키보드 위에 붕 뜨고 입력 바가 주소창과 겹친다.
+   visualViewport 로 키보드 높이를 재서 body.keyboard-open 을 붙이고(탭바 숨김)
+   입력 바를 키보드 바로 위에 fixed 로 붙인다(--kb-inset). */
+const KEYBOARD_MIN = 110;   /* 화면이 이만큼 줄면 키보드가 올라온 것으로 본다 */
+let kbOpen = false;
+let kbSyncFrame = 0;
+
+function keyboardInset() {
+  const vv = window.visualViewport;
+  if (!vv) return 0;
+  const layoutH = window.innerHeight || document.documentElement.clientHeight || 0;
+  return Math.max(0, Math.round(layoutH - vv.height - vv.offsetTop));
+}
+
+function composerFocused() {
+  const a = document.activeElement;
+  return !!(a && el.chatForm && el.chatForm.contains(a) && /^(TEXTAREA|INPUT)$/.test(a.tagName));
+}
+
+function applyKeyboardLayout() {
+  kbSyncFrame = 0;
+  const inset = keyboardInset();
+  document.documentElement.style.setProperty('--kb-inset', `${inset}px`);
+  const open = inset > KEYBOARD_MIN || (composerFocused() && inset > 50);
+  const changed = open !== kbOpen;
+  kbOpen = open;
+  document.body.classList.toggle('keyboard-open', open);
+  if (!changed) return;
+  if (open) setComposerOpen(true);
+  if (activeTab === 'chat') jumpChatToBottom();
+}
+
+function scheduleKeyboardLayout() {
+  if (kbSyncFrame) return;
+  kbSyncFrame = requestAnimationFrame(applyKeyboardLayout);
+}
+
+/* 성과실·제작실 시트 닫기 (배경·닫기 버튼·Esc) */
+if (el.zoneClose) el.zoneClose.addEventListener('click', closeZoneSheet);
+if (el.zoneBackdrop) el.zoneBackdrop.addEventListener('click', closeZoneSheet);
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && zoneOpenId) closeZoneSheet();
+});
+
 /* ---------------- boot ---------------- */
 function boot() {
   const hash = (location.hash || '').replace('#', '');
@@ -1527,6 +1718,14 @@ function boot() {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && state) loadState({ silent: true });
   });
+
+  /* iOS 키보드 — visualViewport 가 줄고 늘 때마다 레이아웃 보정 */
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', scheduleKeyboardLayout);
+    window.visualViewport.addEventListener('scroll', scheduleKeyboardLayout);
+  }
+  window.addEventListener('orientationchange', () => setTimeout(applyKeyboardLayout, 250));
+  applyKeyboardLayout();
 }
 
 document.addEventListener('DOMContentLoaded', boot);

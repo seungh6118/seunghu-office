@@ -3,8 +3,8 @@
     "version": 2,
     "officeName": "어벤져스타워",
     "tagline": "대장 전용 · AVENGERS TOWER",
-    "updatedAt": "2026-11-28T08:00:00+09:00",
-    "summary": "어벤져스타워로 개편 — 후후 캡틴아메리카 · 뮤즈 아이언맨 · Cue 토르 · 제미나이 닥터스트레인지 · Vooy 헐크가 자리에 착석.",
+    "updatedAt": "2026-11-28T15:55:00+09:00",
+    "summary": "어벤져스타워로 개편 — 후후 캡틴아메리카 · 뮤즈 아이언맨 · Cue 토르 · 제미나이 닥터스트레인지 · Vooy 헐크가 자리에 착석. 회의실·성과실·제작실·라운지 4개 존 운영.",
     "stats": [
       {
         "label": "가동 중 비서",
@@ -22,29 +22,14 @@
   },
   "rooms": [
     {
-      "id": "command",
-      "name": "지휘실",
-      "emoji": "🎯",
-      "x": 42.0,
-      "y": 12.0,
-      "state": "on",
-      "status": "가동중",
-      "summary": "대장님 지시와 메인 비서 보고가 오가는 본부. 후후가 데스크 옆에서 대기 중.",
-      "work": [
-        "아빠와딸 3일차 워밍업 지시 접수",
-        "08:15 Day 2 발행 준비 점검",
-        "체험단 대기 3건 확인"
-      ]
-    },
-    {
       "id": "boardroom",
-      "name": "대회의실",
+      "name": "회의실",
       "emoji": "🏛️",
-      "x": 11.5,
-      "y": 21.0,
+      "x": 12.5,
+      "y": 22.0,
       "state": "on",
       "status": "가동중",
-      "summary": "유리로 둘러싼 회의실. 뮤즈와 제미나이가 기획과 SEO 자문으로 붙어 있어요.",
+      "summary": "유리로 둘러싼 회의실. 여기서 바로 회의하며 지휘까지 합니다 — 뮤즈·제미나이가 기획과 SEO 자문으로 붙어 있어요.",
       "work": [
         "아빠달려 3일차 주제 후보 3종 비교",
         "신정호 키즈가든 키워드 검증 마무리",
@@ -52,11 +37,43 @@
       ]
     },
     {
+      "id": "performance",
+      "name": "성과실",
+      "emoji": "📊",
+      "kind": "view",
+      "x": 87.5,
+      "y": 20.0,
+      "state": "on",
+      "status": "가동중",
+      "summary": "채널별 최신 성과를 한 화면에서 — 아빠와딸 · 1x's LAB · 아빠달려 · 살림치트키.",
+      "work": [
+        "아빠와딸 30일 조회수 120 · 반응 9",
+        "1x's LAB 워밍업 3일차 · 12/4 첫 수익화",
+        "아빠달려 1~2일차 발행 완료"
+      ]
+    },
+    {
+      "id": "workshop",
+      "name": "제작실",
+      "emoji": "🛠️",
+      "kind": "view",
+      "x": 37.0,
+      "y": 83.0,
+      "state": "on",
+      "status": "운영 중",
+      "summary": "클로드 외주·프로그램 제작 현황 — 어벤져스타워 · 쇼츠 스튜디오 · 카드뉴스 자동화.",
+      "work": [
+        "어벤져스타워 실시간 DB + Pages 유지보수",
+        "shorts-studio · insta-cardnews-auto 가동",
+        "크리에이터 스튜디오 다음 작업 대기"
+      ]
+    },
+    {
       "id": "lounge",
       "name": "라운지",
       "emoji": "☕",
-      "x": 88.0,
-      "y": 33.0,
+      "x": 86.0,
+      "y": 75.0,
       "state": "idle",
       "status": "대기",
       "summary": "Cue와 Vooy가 자리를 잡아 둔 라운지. 대장님 확인만 남았어요.",
@@ -74,7 +91,7 @@
       "role": "지휘관",
       "emoji": "👑",
       "color": "#d97706",
-      "room": "command",
+      "room": "boardroom",
       "state": "active",
       "x": 62.5,
       "y": 35.2,
@@ -89,7 +106,7 @@
       "role": "메인 비서",
       "emoji": "🧡",
       "color": "#f97316",
-      "room": "command",
+      "room": "boardroom",
       "state": "active",
       "x": 50.0,
       "y": 41.9,
@@ -159,6 +176,169 @@
       "lastActive": "11-28 06:10"
     }
   ],
+  "performance": {
+    "updatedAt": "2026-11-28T15:50:00+09:00",
+    "note": "최근 30일 기준 · 스레드 인사이트에서 확인한 숫자",
+    "channels": [
+      {
+        "id": "dadonduty",
+        "emoji": "🧵",
+        "name": "아빠와딸",
+        "handle": "@dad.on.duty_",
+        "owner": "후후",
+        "status": "워밍업",
+        "badge": "Day 3",
+        "metrics": [
+          {
+            "k": "조회수",
+            "v": "120"
+          },
+          {
+            "k": "조회한 사람",
+            "v": "85"
+          },
+          {
+            "k": "반응",
+            "v": "9"
+          },
+          {
+            "k": "팔로워",
+            "v": "1"
+          }
+        ],
+        "note": "초반 2주 무링크 워밍업 중 — 링크·판매 없이 톤만 쌓는 구간",
+        "accent": "#0284c7"
+      },
+      {
+        "id": "vvascoz",
+        "emoji": "🧪",
+        "name": "1x's LAB",
+        "handle": "@vvascoz",
+        "owner": "뮤즈",
+        "status": "워밍업 3일차",
+        "badge": "준비",
+        "metrics": [
+          {
+            "k": "워밍업",
+            "v": "3일차"
+          },
+          {
+            "k": "첫 수익화",
+            "v": "12/4"
+          }
+        ],
+        "note": "12/4 첫 수익화 발행 예정",
+        "accent": "#7c3aed"
+      },
+      {
+        "id": "dadarry",
+        "emoji": "📝",
+        "name": "아빠달려",
+        "handle": "네이버 블로그 mixed15",
+        "owner": "후후",
+        "status": "발행 중",
+        "badge": "2일차 완료",
+        "metrics": [
+          {
+            "k": "1일차",
+            "v": "발행 완료"
+          },
+          {
+            "k": "2일차",
+            "v": "발행 완료"
+          },
+          {
+            "k": "3일차",
+            "v": "예정"
+          }
+        ],
+        "note": "1~2일차 발행 완료(신정호 키즈가든) · 3일차 「충남교육청 과학교육원」 예정",
+        "link": "https://blog.naver.com/mixed15/224494899471",
+        "accent": "#0d9488"
+      },
+      {
+        "id": "salimcheatkey",
+        "emoji": "🧼",
+        "name": "살림치트키",
+        "handle": "인스타 · 스레드",
+        "owner": "대장님",
+        "status": "직할 운영",
+        "badge": "직할",
+        "metrics": [
+          {
+            "k": "운영",
+            "v": "직할"
+          }
+        ],
+        "note": "대장님이 직접 운영 — 비서는 일정·소재만 보조",
+        "accent": "#d97706"
+      }
+    ]
+  },
+  "workshop": {
+    "updatedAt": "2026-11-28T15:50:00+09:00",
+    "note": "대장님 지시로 만든 자동화 도구 — 상태는 후후가 갱신",
+    "projects": [
+      {
+        "id": "avengers",
+        "emoji": "🏗️",
+        "name": "어벤져스타워",
+        "handle": "seunghu-office",
+        "owner": "후후 유지보수",
+        "status": "운영 중",
+        "stack": [
+          "Supabase 실시간 DB",
+          "GitHub Pages",
+          "Vanilla JS"
+        ],
+        "note": "실시간 DB + GitHub Pages 운영 중 — 회의실·작업실·메모·비서현황 45초 동기화",
+        "link": "https://seungh6118.github.io/seunghu-office/",
+        "accent": "#0284c7"
+      },
+      {
+        "id": "shorts-studio",
+        "emoji": "🎬",
+        "name": "shorts-studio",
+        "handle": "쇼핑 쇼츠 제작 툴",
+        "owner": "대장님 · 클로드 외주",
+        "status": "제작 툴",
+        "stack": [
+          "숏폼",
+          "자동 컷편집"
+        ],
+        "note": "대장님·클로드 외주로 만든 제작 툴",
+        "accent": "#dc2626"
+      },
+      {
+        "id": "insta-cardnews-auto",
+        "emoji": "🃏",
+        "name": "insta-cardnews-auto",
+        "handle": "카드뉴스 자동화",
+        "owner": "대장님 · 클로드 외주",
+        "status": "제작 툴",
+        "stack": [
+          "카드뉴스",
+          "자동 렌더"
+        ],
+        "note": "대장님·클로드 외주로 만든 제작 툴",
+        "accent": "#7c3aed"
+      },
+      {
+        "id": "creator-studio",
+        "emoji": "🎛️",
+        "name": "크리에이터 스튜디오",
+        "handle": "영상·이미지 작업",
+        "owner": "대장님 · 클로드 외주",
+        "status": "제작 툴",
+        "stack": [
+          "영상",
+          "이미지"
+        ],
+        "note": "대장님·클로드 외주로 만든 제작 툴",
+        "accent": "#0d9488"
+      }
+    ]
+  },
   "meetings": [
     {
       "id": "mt-01",
@@ -218,7 +398,7 @@
     },
     {
       "id": "mt-07",
-      "room": "command",
+      "room": "boardroom",
       "authorId": "seunghu",
       "at": "2026-11-27T23:15:00+09:00",
       "text": "아빠와딸 이제부터 네가 키워봐. 쉐도우밴 안 당하게 지능적으로 움직여.",
@@ -228,7 +408,7 @@
     },
     {
       "id": "mt-08",
-      "room": "command",
+      "room": "boardroom",
       "authorId": "seunghu",
       "at": "2026-11-28T05:52:00+09:00",
       "text": "비서실 웹앱 만들자. 뮤즈도 회의실에 부를 수 있게.",
@@ -238,7 +418,7 @@
     },
     {
       "id": "mt-09",
-      "room": "command",
+      "room": "boardroom",
       "authorId": "huhu",
       "at": "2026-11-28T06:26:00+09:00",
       "text": "오피스 맵을 모던 다크 스튜디오로 다시 깔았어. 새 배경에 맞춰 방 라벨·핀 좌표도 옮겼고, Cue·Vooy 자리는 라운지에 잡아뒀어 @대장.",

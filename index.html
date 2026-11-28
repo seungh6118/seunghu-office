@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#EEF5FE" />
   <meta name="color-scheme" content="light" />
-  <meta name="description" content="대장 전용 어벤져스타워 — 오피스 맵, 회의실, 작업실, 비서현황, 메모 (Supabase 실시간 동기화)" />
+  <meta name="description" content="대장 전용 어벤져스타워 — 오피스 맵, 회의실, 성과실, 제작실, 작업실, 비서현황, 메모 (Supabase 실시간 동기화)" />
   <title>어벤져스타워</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="어벤져스타워" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <link rel="stylesheet" href="styles.css?v=20261128-autoscroll" />
+  <link rel="stylesheet" href="styles.css?v=20261128-rooms2" />
 </head>
 <body>
   <header class="app-header">
@@ -108,12 +108,12 @@
         <div class="map-stage" id="map-stage">
           <picture>
             <source type="image/webp" srcset="assets/office-map-bg.webp" />
-            <img class="map-img" id="map-img" src="assets/office-map-bg.png" alt="밝은 낮의 초고층 어벤져스타워 — 상단 중앙 지휘 데스크와 회장님 의자, 좌측 유리 대회의실의 홀로그램 테이블, 우측 하단 라운지의 흰 소파" />
+            <img class="map-img" id="map-img" src="assets/office-map-bg.png" alt="밝은 낮의 초고층 어벤져스타워 — 좌측 유리 회의실의 홀로그램 테이블, 우측 홀로그램 대시보드의 성과실, 하단 중앙 제작 플랫폼의 제작실, 우측 하단 라운지의 흰 소파" />
           </picture>
           <div class="map-layer" id="room-labels"></div>
           <div class="map-layer" id="characters"></div>
         </div>
-        <p class="map-hint">방을 누르면 그 방 회의실로 이동해요 · 비서를 누르면 지금 하는 일이 보여요</p>
+        <p class="map-hint">회의실·라운지는 그 방으로 이동 · 성과실·제작실은 현황판이 열려요 · 비서를 누르면 지금 하는 일이 보여요</p>
       </div>
 
       <div class="detail-sheet" id="map-detail" hidden></div>
@@ -144,11 +144,13 @@
 
       <form class="composer" id="chat-form" autocomplete="off">
         <div class="composer-panel" id="composer-panel" inert>
-          <div class="composer-row">
+          <div class="composer-strip">
             <span class="composer-label">보내는 사람</span>
             <div class="sender-chips" id="sender-chips" aria-label="보내는 사람 선택"></div>
+            <span class="composer-sep" aria-hidden="true"></span>
+            <span class="composer-label" aria-hidden="true">@멘션</span>
+            <div class="mention-chips" id="mention-chips" aria-label="멘션 추가"></div>
           </div>
-          <div class="mention-chips" id="mention-chips" aria-label="멘션 추가"></div>
         </div>
         <div class="composer-bar">
           <button class="sender-toggle" id="sender-toggle" type="button" aria-expanded="false" aria-controls="composer-panel" title="보내는 사람 바꾸기">
@@ -273,6 +275,21 @@
     <span class="cl-ico" aria-hidden="true">↓</span><span class="cl-txt">최신</span><span class="cl-count" id="chat-latest-count" hidden></span>
   </button>
 
-  <script src="app.js?v=20261128-autoscroll"></script>
+  <!-- 성과실 · 제작실 전용 바텀시트 -->
+  <div class="zone-backdrop" id="zone-backdrop" hidden></div>
+  <section class="zone-sheet" id="zone-sheet" role="dialog" aria-modal="true" aria-labelledby="zone-title" hidden>
+    <div class="zone-grip" aria-hidden="true"></div>
+    <header class="zone-head">
+      <span class="zone-emoji" id="zone-emoji" aria-hidden="true">📊</span>
+      <div class="zone-id">
+        <h2 id="zone-title">성과실</h2>
+        <p id="zone-sub">채널별 최신 성과</p>
+      </div>
+      <button class="zone-close" id="zone-close" type="button" aria-label="닫기">✕</button>
+    </header>
+    <div class="zone-body" id="zone-body"></div>
+  </section>
+
+  <script src="app.js?v=20261128-rooms2"></script>
 </body>
 </html>
