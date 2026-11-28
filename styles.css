@@ -1797,3 +1797,22 @@ body.keyboard-open .composer::after { display: none; }
    키보드 높이(--kb-inset)만큼 더 주어야 바닥까지 스크롤했을 때 마지막 말풍선이
    입력 바 위(키보드 바로 위)에 보인다. */
 body.keyboard-open #view-chat .msg-list { padding-bottom: calc(var(--kb-inset, 0px) + 130px); }
+
+/* ---------------- 1팀 · 2팀 (팀방 · 비서현황 배지) ---------------- */
+.chip.is-team { border-color: rgba(124, 58, 237, .28); background: linear-gradient(180deg, #ffffff, #f7f4ff); }
+.chip.is-team .dot { background: #7c3aed; box-shadow: 0 0 8px rgba(124, 58, 237, .6); }
+.chip.is-team.is-active { border-color: rgba(124, 58, 237, .5); background: linear-gradient(180deg, rgba(124, 58, 237, .14), rgba(124, 58, 237, .06)); color: #5b21b6; }
+.agent-team { margin-top: 9px; }
+.team-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(124, 58, 237, .28);
+  background: #f6f2ff;
+  color: #5b21b6;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: -.01em;
+}

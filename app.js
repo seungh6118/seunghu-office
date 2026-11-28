@@ -427,6 +427,12 @@ function roomById(id) {
   return list.find((r) => r.id === id) || { id, name: id, emoji: '🚪', status: '', state: 'idle' };
 }
 
+/* 팀 메타 — 비서현황 카드 배지용 (장은 후후·뮤즈) */
+function teamById(id) {
+  const list = (state && state.teams) || [];
+  return list.find((t) => t.id === id) || null;
+}
+
 function roomTag(roomId) {
   const r = roomById(roomId);
   return `<span class="msg-room">${esc(r.emoji)} ${esc(r.name)}</span>`;
@@ -487,6 +493,8 @@ const ROOM_ALIAS = {
   boardroom: 'boardroom', conference: 'boardroom', meeting: 'boardroom', '대회의실': 'boardroom', '회의실': 'boardroom',
   performance: 'performance', '성과실': 'performance',
   workshop: 'workshop', '제작실': 'workshop',
+  team1: 'team1', '1팀': 'team1', '1팀방': 'team1', 'team-1': 'team1',
+  team2: 'team2', '2팀': 'team2', '2팀방': 'team2', 'team-2': 'team2',
   lounge: 'lounge', '라운지': 'lounge'
 };
 
@@ -732,8 +740,9 @@ function renderRoomChips() {
     const on = r.state === 'on';
     const sel = selected && selected.type === 'room' && selected.id === r.id;
     const zone = isZoneRoom(r.id);
+    const team = /^team[12]$/.test(r.id);
     const attr = zone ? `data-zone="${esc(r.id)}"` : `data-room-jump="${esc(r.id)}"`;
-    return `<button class="chip ${sel ? 'is-active' : ''} ${zone ? 'is-zone' : ''}" type="button" ${attr}>
+    return `<button class="chip ${sel ? 'is-active' : ''} ${zone ? 'is-zone' : ''} ${team ? 'is-team' : ''}" type="button" ${attr}>
       <span class="dot ${on ? '' : 'is-idle'}"></span>${esc(r.emoji)} ${esc(r.name)}
       <span class="chip-sub">${esc(r.status)}</span>
     </button>`;
@@ -744,7 +753,7 @@ function renderRoomChips() {
 function renderMap() {
   el.mapStage.classList.toggle('motion-on', motionOn);
 
-  el.roomLabels.innerHTML = (state.rooms || []).map((r) => {
+  el.roomLabels.innerHTML = (state.rooms || []).filter((r) => r.map !== false).map((r) => {
     const sel = selected && selected.type === 'room' && selected.id === r.id;
     const zone = isZoneRoom(r.id);
     const attr = zone ? `data-zone="${esc(r.id)}"` : `data-room="${esc(r.id)}"`;
@@ -1130,7 +1139,13 @@ function renderProjects() {
 
 /* ---------------- tab 4: status ---------------- */
 function renderAgents() {
-  el.agentCards.innerHTML = agentRows().map((a) => `
+  el.agentCards.innerHTML = agentRows().map((a) => {
+    const team = teamById(a.team || (charById(a.id).team));
+    const leader = team && (charById(team.leader) || {}).name;
+    const teamBadge = team
+      ? `<p class="agent-team"><span class="team-badge">${esc(team.emoji)} ${esc(team.name)}${leader ? ` (팀장: ${esc(leader)})` : ''}</span></p>`
+      : '';
+    return `
     <article class="agent-card ${a.source === 'supabase' ? 'is-live' : ''}">
       <div class="agent-head">
         <span class="agent-avatar" style="--tint:${esc((charById(a.id).color) || '#0284c7')}" aria-hidden="true">${charArt(a.id) || esc(a.emoji)}</span>
@@ -1140,6 +1155,7 @@ function renderAgents() {
         </div>
         <span class="pill ${/가동|협업|자문|진행/.test(String(a.state)) ? 'is-on' : 'is-idle'}">${esc(a.state)}</span>
       </div>
+      ${teamBadge}
       <p class="agent-task">${esc(a.task || '—')}</p>
       ${a.next ? `<p class="agent-next"><b>다음</b> ${esc(a.next)}</p>` : ''}
       <div class="agent-meta">
@@ -1147,7 +1163,8 @@ function renderAgents() {
         <span>최근 <b>${esc(a.lastActive || '—')}</b></span>
       </div>
       <div class="agent-skills">${(a.skills || []).map((s) => `<span class="agent-skill">${esc(s)}</span>`).join('')}</div>
-    </article>`).join('');
+    </article>`;
+  }).join('');
 
   el.scheduleList.innerHTML = (state.schedules || []).map((s) => {
     const pillCls = s.status === '다음 실행' ? 'is-on' : s.status === '자동' ? 'is-done' : 'is-idle';

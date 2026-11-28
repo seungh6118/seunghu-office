@@ -72,6 +72,7 @@ python3 -m http.server 8765
 | 방 라벨 | 좌표 (%) | 여는 화면 |
 | --- | --- | --- |
 | 🏛️ 회의실 | 12.5 / 22.0 | 회의실 탭 (방 필터 `boardroom`) |
+| 🛡️ 1팀 · ⚡ 2팀 | 지도 라벨 없음 | 상단 칩 · 회의실 탭 팀 필터 (`team1` / `team2`) |
 | 📊 성과실 | 87.5 / 20.0 | 전용 바텀시트 (채널 성과) |
 | 🛠️ 제작실 | 37.0 / 83.0 | 전용 바텀시트 (외주·제작 현황) |
 | ☕ 라운지 | 86.0 / 75.0 | 회의실 탭 (방 필터 `lounge`) |
@@ -85,7 +86,8 @@ python3 -m http.server 8765
 | 키 | 설명 |
 | --- | --- |
 | `meta` | `updatedAt`(ISO 시각), `summary`(본부 카드 한 줄 요약), `stats`(본부 카드 지표 3개) |
-| `rooms[]` | 방 4곳. `id`(boardroom/performance/workshop/lounge), `kind`(`view`면 전용 현황판 — 성과실·제작실), `emoji`, `name`, `x`·`y`(맵 위 라벨 위치 %), `state`(on/idle), `status`, `summary`, `work[]` |
+| `rooms[]` | 방·존 6곳. `id`(boardroom/team1/team2/performance/workshop/lounge), `kind`(`view`면 전용 현황판 — 성과실·제작실), `map`(false면 지도 라벨 없이 상단 칩에만), `emoji`, `name`, `x`·`y`(맵 위 라벨 위치 %), `state`(on/idle), `status`, `summary`, `work[]` |
+| `teams[]` | 팀 구성. `id`(team1/team2), `name`, `emoji`, `leader`(팀장 캐릭터 id), `members[]` |
 | `performance` | 성과실 카드. `channels[]` — `name`, `handle`, `owner`, `status`, `badge`, `metrics[{k,v}]`, `note`, `link`, `accent` |
 | `workshop` | 제작실 카드. `projects[]` — `name`, `handle`, `owner`, `status`, `stack[]`, `note`, `link`, `accent` |
 | `characters[]` | 맵 위 캐릭터. `id`, `emoji`, `name`, `role`, `room`(소속 방 id), `state`(active/idle), `x`·`y`(%), `status`, `task`, `next`, `lastActive`, `color` |
@@ -119,7 +121,8 @@ DB가 막힌 환경에서만 쓰이는 보조 저장소입니다.
 ## 화면
 
 1. **오피스 맵** — 본부 요약 카드, 움직임 ON/OFF 토글, 4개 존(회의실·성과실·제작실·라운지) 배지, 히어로 본부 위 착석 캐릭터(눌러서 현재 작업 확인)
-2. **회의실** — 전체·회의실·라운지 필터(지휘실 폐지), 보내는 사람·@멘션 한 줄 스트립, 메시지 전송 → Supabase 실시간 공유(LIVE 표시)
+2. **회의실** — 전체·회의실·🛡️ 1팀·⚡ 2팀·라운지 필터(지휘실 폐지), 보내는 사람·@멘션 한 줄 스트립, 메시지 전송 → Supabase 실시간 공유(LIVE 표시)
+   - 팀 구성: **1팀 = 후후(팀장) + Cue**, **2팀 = 뮤즈(팀장) + Vooy**. 팀방은 `room: "team1" / "team2"` 로 저장됩니다.
    - 예전 `command`(지휘실) 로 남은 DB 로그는 `boardroom`(회의실)으로 매핑되어 그대로 보입니다.
    - iOS Safari 키보드가 올라오면 `body.keyboard-open` 으로 하단 탭바를 숨기고 입력 바를 `visualViewport` 하단(키보드 위)에 고정합니다. `.view` 의 `view-in` 애니메이션이 fixed 기준을 잡지 않도록 `#view-chat` 는 애니메이션을 끕니다.
    - **성과실·제작실** — 지도 라벨·상단 칩을 누르면 전용 바텀시트(`#zone-sheet`)가 열립니다(회의실 이동 아님).
