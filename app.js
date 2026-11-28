@@ -68,287 +68,6 @@ const COMPOSER_IDS = ['seunghu', 'huhu', 'muse', 'gemini', 'cue', 'vooy'];
 const TINTS = ['#0284c7', '#06b6d4', '#d97706'];
 const GROUP_GAP_MS = 5 * 60 * 1000;
 
-/* =========================================================
-   캐릭터 아트 — 이모지 대신 쓰는 커스텀 어벤져스 SVG
-   후후=캡틴 아메리카 · 뮤즈=아이언맨(풀 페이스 마스크) · Cue=토르
-   제미나이=닥터 스트레인지 · Vooy=헐크 · 대장=왕관+케이프 유지
-   좌표계 0 0 96 120 · 발(밑동)은 y=112, 바닥 그림자 y=116
-   ========================================================= */
-const CHAR_ART = {
-  huhu: `
-  <defs>
-    <linearGradient id="hhRim" x1=".12" y1="0" x2=".8" y2="1">
-      <stop offset="0" stop-color="#ff8f7c"/><stop offset=".42" stop-color="#d92b22"/><stop offset="1" stop-color="#75090a"/>
-    </linearGradient>
-    <linearGradient id="hhRing" x1=".2" y1="0" x2=".8" y2="1">
-      <stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#eef3f9"/><stop offset="1" stop-color="#b3c2d4"/>
-    </linearGradient>
-    <radialGradient id="hhBlue" cx="34%" cy="26%" r="74%">
-      <stop offset="0" stop-color="#63a6ff"/><stop offset=".5" stop-color="#1e4fb5"/><stop offset="1" stop-color="#0a1c4c"/>
-    </radialGradient>
-    <radialGradient id="hhGloss" cx="33%" cy="22%" r="58%">
-      <stop offset="0" stop-color="#ffffff" stop-opacity=".6"/><stop offset=".55" stop-color="#ffffff" stop-opacity=".08"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="hhSeat" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="#0b2545" stop-opacity=".48"/>
-      <stop offset=".6" stop-color="#0b2545" stop-opacity=".18"/>
-      <stop offset="1" stop-color="#0b2545" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
-  <ellipse cx="48" cy="109" rx="27" ry="7.6" fill="url(#hhSeat)"/>
-  <g transform="rotate(-6 48 58)">
-    <circle cx="48" cy="58.6" r="38.6" fill="#400707"/>
-    <circle cx="48" cy="58" r="37.2" fill="url(#hhRim)" stroke="#4a0707" stroke-width="1.3"/>
-    <circle cx="48" cy="58" r="30.1" fill="url(#hhRing)" stroke="#a9b8c9" stroke-width=".7"/>
-    <circle cx="48" cy="58" r="23" fill="url(#hhRim)" stroke="#7a0c0b" stroke-width=".6"/>
-    <circle cx="48" cy="58" r="15.9" fill="url(#hhBlue)" stroke="#08204d" stroke-width=".8"/>
-    <path d="M48 46.8 L50.8 54.2 L58.7 54.5 L52.5 59.5 L54.6 67.1 L48 62.7 L41.4 67.1 L43.5 59.5 L37.3 54.5 L45.2 54.2 Z" fill="#f8fbff" stroke="#dde7f2" stroke-width=".5"/>
-    <path d="M47 50.6 L48.2 54.3 L52 54.4 L49 56.7 L50 60.4 L47 58.2 L44 60.4 L45 56.7 L42 54.4 L45.8 54.3 Z" fill="#ffffff" opacity=".75"/>
-    <path d="M16.5 45a37.4 37.4 0 0 1 24-23.4" fill="none" stroke="#ffe2d8" stroke-width="2.6" stroke-linecap="round" opacity=".5"/>
-    <path d="M83 70a37.4 37.4 0 0 1 -22 24.6" fill="none" stroke="#3a0605" stroke-width="2.2" stroke-linecap="round" opacity=".28"/>
-    <path d="M22.4 70a26 26 0 0 0 51 0" fill="none" stroke="#6d0b0a" stroke-width="1.4" opacity=".18"/>
-    <circle cx="48" cy="58" r="37.2" fill="url(#hhGloss)"/>
-  </g>`,
-  seunghu: `
-  <defs>
-    <linearGradient id="sgSuit" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#31425c"/><stop offset="1" stop-color="#0d1725"/>
-    </linearGradient>
-    <linearGradient id="sgGold" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#fef3c7"/><stop offset=".5" stop-color="#f59e0b"/><stop offset="1" stop-color="#b45309"/>
-    </linearGradient>
-    <linearGradient id="sgCape" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#dc2626"/><stop offset="1" stop-color="#991b1b"/>
-    </linearGradient>
-    <radialGradient id="sgSeat" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="#0b2545" stop-opacity=".45"/>
-      <stop offset=".6" stop-color="#0b2545" stop-opacity=".2"/>
-      <stop offset="1" stop-color="#0b2545" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
-  <ellipse cx="48" cy="109" rx="33" ry="9" fill="url(#sgSeat)"/>
-  <ellipse cx="48" cy="108" rx="28" ry="8" fill="#1b2732"/>
-  <path d="M12 80c0-9 7-16 16-16h40c9 0 16 7 16 16v32H12z" fill="#16202b" stroke="#4e6274" stroke-width="1.1"/>
-  <path d="M17 80c0-5 4-9 9-9h44c5 0 9 4 9 9" fill="none" stroke="#5b7185" stroke-width="1.1" opacity=".85"/>
-  <path d="M30 80c-8 8-12 20-13 32h14z" fill="url(#sgCape)"/>
-  <path d="M66 80c8 8 12 20 13 32H65z" fill="url(#sgCape)"/>
-  <path d="M48 78c14 0 24 8 26 20 1 5 1 10 1 14H21c0-4 0-9 1-14 2-12 12-20 26-20z" fill="url(#sgSuit)" stroke="#f59e0b" stroke-width="1.3" stroke-opacity=".9"/>
-  <path d="M39 79l9 13 9-13-4-2H43z" fill="#eef4fb"/>
-  <path d="M48 92l-3.4 11 3.4 9 3.4-9z" fill="url(#sgGold)"/>
-  <path d="M39 79 32 99l10-6z" fill="#16233a"/>
-  <path d="M57 79l7 20-10-6z" fill="#16233a"/>
-  <circle cx="48" cy="105" r="4.6" fill="#dc2626" stroke="#fbbf24" stroke-width="1.2"/>
-  <path d="M48 102.6l1 2.2 2.4.3-1.8 1.7.5 2.4-2.1-1.2-2.1 1.2.5-2.4-1.8-1.7 2.4-.3z" fill="#fde68a"/>
-  <circle cx="48" cy="52" r="23" fill="#f6c9a0" stroke="#c2834a" stroke-width="1"/>
-  <circle cx="25" cy="53" r="4" fill="#f0b98d"/><circle cx="71" cy="53" r="4" fill="#f0b98d"/>
-  <path d="M25 50c0-16 10-26 23-26s23 10 23 26c-3-9-11-14-23-14s-20 5-23 14z" fill="#1b2431"/>
-  <circle cx="40" cy="55" r="2.8" fill="#141a24"/><circle cx="56" cy="55" r="2.8" fill="#141a24"/>
-  <path d="M35 47.5l7-2.5" stroke="#1b2431" stroke-width="2" stroke-linecap="round"/>
-  <path d="M61 47.5l-7-2.5" stroke="#1b2431" stroke-width="2" stroke-linecap="round"/>
-  <path d="M44 64c2.6 2.6 5.4 2.6 8 0" fill="none" stroke="#9a5a35" stroke-width="1.8" stroke-linecap="round"/>
-  <rect x="18" y="46" width="8" height="15" rx="4" fill="#7d8fa6"/>
-  <rect x="70" y="46" width="8" height="15" rx="4" fill="#7d8fa6"/>
-  <path d="M73 59c4 6 1 11-5 12" fill="none" stroke="#9fb0c6" stroke-width="2.2" stroke-linecap="round"/>
-  <circle cx="67" cy="71" r="2.6" fill="#f59e0b"/>
-  <path d="M30 25l2.5-13 7 6.5L48 9l8.5 9.5 7-6.5L66 25z" fill="url(#sgGold)" stroke="#8a4b06" stroke-width="1.1" stroke-linejoin="round"/>`,
-  muse: `
-  <defs>
-    <linearGradient id="msRed" x1=".12" y1="0" x2=".72" y2="1">
-      <stop offset="0" stop-color="#ff7a5c"/><stop offset=".34" stop-color="#cf2112"/><stop offset=".76" stop-color="#8f1309"/><stop offset="1" stop-color="#5a0804"/>
-    </linearGradient>
-    <linearGradient id="msGold" x1=".18" y1="0" x2=".72" y2="1">
-      <stop offset="0" stop-color="#fff8dc"/><stop offset=".3" stop-color="#fbd45a"/><stop offset=".74" stop-color="#cf8c0b"/><stop offset="1" stop-color="#8a5404"/>
-    </linearGradient>
-    <radialGradient id="msEye" cx="45%" cy="40%" r="70%">
-      <stop offset="0" stop-color="#ffffff"/><stop offset=".38" stop-color="#c9f9ff"/><stop offset=".78" stop-color="#38cdf5"/><stop offset="1" stop-color="#0b8fc4"/>
-    </radialGradient>
-    <radialGradient id="msSeat" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="#0b2545" stop-opacity=".45"/>
-      <stop offset=".6" stop-color="#0b2545" stop-opacity=".16"/>
-      <stop offset="1" stop-color="#0b2545" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
-  <ellipse cx="48" cy="107" rx="24" ry="6.6" fill="url(#msSeat)"/>
-  <path d="M48 10.6C32.4 10.6 23.2 19.8 22.6 33.4L22 50c-.2 12 2.8 21.6 8.6 28.4 2.6 3 5.6 5.4 9 7.6 2.4 1.6 5.2 2.6 8.4 2.6s6-1 8.4-2.6c3.4-2.2 6.4-4.6 9-7.6 5.8-6.8 8.8-16.4 8.6-28.4l-.6-16.6C72.8 19.8 63.6 10.6 48 10.6z" fill="url(#msRed)" stroke="#4a0803" stroke-width="1.4" stroke-linejoin="round"/>
-  <path d="M27.4 31.2c1.8-11.2 9.8-18.4 20.6-18.4 4.2 0 7.8 1 10.6 2.8-4 1.4-6.8 3.6-8.8 6.8-3.6 5.8-9.6 8.6-16.2 8-2.4-.2-4.4 0-6.2.8z" fill="#ffa48c" opacity=".26"/>
-  <path d="M48 22.6c-8.8 0-13.8 5-14.6 13.6l-.6 13.8c-.4 8.4 1.4 15.2 4.8 20.2 2 2.8 5.4 5.2 10.4 6.8 5-1.6 8.4-4 10.4-6.8 3.4-5 5.2-11.8 4.8-20.2l-.6-13.8C62 27.6 56.8 22.6 48 22.6z" fill="url(#msGold)" stroke="#8a5404" stroke-width="1.2" stroke-linejoin="round"/>
-  <path d="M34 30.6c.8-2.6 2.4-4.8 4.6-6.4 2.8-2 6-3 9.4-3s6.6 1 9.4 3c2.2 1.6 3.8 3.8 4.6 6.4-3.8-2.4-8.6-3.6-14-3.6s-10.2 1.2-14 3.6z" fill="#fff8dc" opacity=".5"/>
-  <path d="M33.4 39.4c1.4-6 6.8-9.6 14.6-9.6s13.2 3.6 14.6 9.6" fill="none" stroke="#fff3c4" stroke-width="1.5" opacity=".4"/>
-  <path d="M33.2 39.6 47 43.4 46.4 50.4 34 46.4z" fill="#2a0d04" stroke="#5e3403" stroke-width=".8" stroke-linejoin="round"/>
-  <path d="M62.8 39.6 49 43.4 49.6 50.4 62 46.4z" fill="#2a0d04" stroke="#5e3403" stroke-width=".8" stroke-linejoin="round"/>
-  <path d="M34.4 41.4 46.2 44.6 45.8 48.6 35.2 45.4z" fill="url(#msEye)"/>
-  <path d="M61.6 41.4 49.8 44.6 50.2 48.6 60.8 45.4z" fill="url(#msEye)"/>
-  <path d="M37.6 43.4 45 45.4 44.8 46.6 37.8 44.6z" fill="#ffffff" opacity=".85"/>
-  <path d="M58.4 43.4 51 45.4 51.2 46.6 58.2 44.6z" fill="#ffffff" opacity=".85"/>
-  <ellipse cx="40.4" cy="44.6" rx="6" ry="3.4" fill="#63d8ff" opacity=".28"/>
-  <ellipse cx="55.6" cy="44.6" rx="6" ry="3.4" fill="#63d8ff" opacity=".28"/>
-  <path d="M48 35.2v8.4" stroke="#c98f0c" stroke-width="1.1" opacity=".3"/>
-  <path d="M43.4 52.4h9.2c1.4 0 2.4 1 2.3 2.4l-.2 1.8c-.1 1.1-1.1 1.9-2.2 1.9h-9c-1.1 0-2.1-.8-2.2-1.9l-.2-1.8c-.1-1.4.9-2.4 2.3-2.4z" fill="#3d1404" opacity=".85"/>
-  <path d="M44 56h8" stroke="#f0b13f" stroke-width=".9" opacity=".5" stroke-linecap="round"/>
-  <path d="M38 59c-.2 5.4 1 9.6 3.4 12.6M58 59c.2 5.4-1 9.6-3.4 12.6" stroke="#8a5404" stroke-width="1.2" stroke-linecap="round" opacity=".38"/>
-  <path d="M24.6 42.6c-1.6 7.8-1.2 15.6 1.4 22.4 1.4 3.8 3.2 6.8 5.4 9.4" fill="none" stroke="#f2c46a" stroke-width="1.6" stroke-linecap="round" opacity=".42"/>
-  <path d="M71.4 42.6c1.6 7.8 1.2 15.6-1.4 22.4-1.4 3.8-3.2 6.8-5.4 9.4" fill="none" stroke="#f2c46a" stroke-width="1.6" stroke-linecap="round" opacity=".42"/>
-  <ellipse cx="23.8" cy="54.6" rx="4.2" ry="5.8" fill="url(#msGold)" stroke="#7d4b04" stroke-width=".9"/>
-  <ellipse cx="72.2" cy="54.6" rx="4.2" ry="5.8" fill="url(#msGold)" stroke="#7d4b04" stroke-width=".9"/>
-  <path d="M22 52.4c.8-1.2 1.8-2 3.2-2.2M74 52.4c-.8-1.2-1.8-2-3.2-2.2" fill="none" stroke="#fff8dc" stroke-width="1" stroke-linecap="round" opacity=".7"/>
-  <path d="M32.6 21.8c3.6-4.6 8.8-7 15-7 3.2 0 6 .6 8.4 1.8" fill="none" stroke="#ffd9cd" stroke-width="2" stroke-linecap="round" opacity=".5"/>
-  <path d="M39.4 84.6c2.6 2 5.6 3.2 8.6 3.2s6-1.2 8.6-3.2" fill="none" stroke="#380603" stroke-width="1.8" stroke-linecap="round" opacity=".26"/>`,
-  gemini: `
-  <defs>
-    <linearGradient id="gmGold" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#ffe9a8"/><stop offset=".5" stop-color="#f59e0b"/><stop offset="1" stop-color="#b45309"/>
-    </linearGradient>
-    <radialGradient id="gmCore" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="#fff7d6" stop-opacity=".95"/>
-      <stop offset=".45" stop-color="#fb923c" stop-opacity=".55"/>
-      <stop offset="1" stop-color="#c2410c" stop-opacity="0"/>
-    </radialGradient>
-    <filter id="gmBlur" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="2.6"/>
-    </filter>
-    <radialGradient id="gmSeat" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="#0b2545" stop-opacity=".42"/>
-      <stop offset=".6" stop-color="#0b2545" stop-opacity=".16"/>
-      <stop offset="1" stop-color="#0b2545" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
-  <ellipse cx="48" cy="109" rx="25" ry="7" fill="url(#gmSeat)"/>
-  <g filter="url(#gmBlur)" opacity=".55">
-    <circle cx="48" cy="56" r="34" fill="none" stroke="#fb923c" stroke-width="4"/>
-    <circle cx="48" cy="56" r="20" fill="none" stroke="#fdba74" stroke-width="3"/>
-  </g>
-  <circle cx="48" cy="56" r="33.5" fill="url(#gmCore)" opacity=".45"/>
-  <circle cx="48" cy="56" r="34" fill="none" stroke="#fbbf24" stroke-width="1.8" opacity=".95"/>
-  <circle cx="48" cy="56" r="30.6" fill="none" stroke="#fdba74" stroke-width="1" opacity=".8" stroke-dasharray="2.6 3.4"/>
-  <path d="M48 30 L52.2 45.8 L66.4 37.6 L58.2 51.8 L74 56 L58.2 60.2 L66.4 74.4 L52.2 66.2 L48 82 L43.8 66.2 L29.6 74.4 L37.8 60.2 L22 56 L37.8 51.8 L29.6 37.6 L43.8 45.8 Z" fill="none" stroke="url(#gmGold)" stroke-width="1.5" stroke-linejoin="round" opacity=".95"/>
-  <rect x="27.8" y="35.8" width="40.4" height="40.4" fill="none" stroke="#fdba74" stroke-width="1.2" opacity=".85" transform="rotate(45 48 56)"/>
-  <rect x="33.6" y="41.6" width="28.8" height="28.8" fill="none" stroke="#fbbf24" stroke-width="1.3" opacity=".9"/>
-  <circle cx="48" cy="56" r="17.4" fill="none" stroke="#fb923c" stroke-width="1.4" opacity=".9"/>
-  <path d="M56 36.6 L54.1 49.9 L67.4 48 L56.6 56 L67.4 64 L54.1 62.1 L56 75.4 L48 64.6 L40 75.4 L41.9 62.1 L28.6 64 L39.4 56 L28.6 48 L41.9 49.9 L40 36.6 L48 47.4 Z" fill="none" stroke="#fde68a" stroke-width="1" opacity=".7" stroke-linejoin="round"/>
-  <circle cx="48" cy="56" r="8.4" fill="none" stroke="#fed7aa" stroke-width="1.2" opacity=".9"/>
-  <path d="M48 48.5 L48.9 53.8 L53.3 50.7 L50.2 55.1 L55.5 56 L50.2 56.9 L53.3 61.3 L48.9 58.2 L48 63.5 L47.1 58.2 L42.7 61.3 L45.8 56.9 L40.5 56 L45.8 55.1 L42.7 50.7 L47.1 53.8 Z" fill="#fff7d6" opacity=".95"/>
-  <g stroke="#fdba74" stroke-width="1.4" stroke-linecap="round" opacity=".85">
-    <path d="M48 19.4v4.2M48 88.4v4.2M11.4 56h4.2M80.4 56h4.2"/>
-    <path d="M22.2 30.2l3 3M71 79l3 3M73.8 30.2l-3 3M25 79l-3 3"/>
-  </g>
-  <g fill="#fde68a" opacity=".9">
-    <circle cx="48" cy="18.6" r="1.5"/><circle cx="48" cy="93.4" r="1.5"/>
-    <circle cx="10.6" cy="56" r="1.5"/><circle cx="85.4" cy="56" r="1.5"/>
-  </g>
-  <path d="M20 40.6a34 34 0 0 1 19.4-16.4" fill="none" stroke="#fff3c4" stroke-width="1.6" stroke-linecap="round" opacity=".55"/>`,
-  cue: `
-  <defs>
-    <linearGradient id="cqSteel" x1=".08" y1="0" x2=".6" y2="1">
-      <stop offset="0" stop-color="#ffffff"/><stop offset=".18" stop-color="#eaf1f8"/><stop offset=".52" stop-color="#b9c9da"/><stop offset=".82" stop-color="#93a8bd"/><stop offset="1" stop-color="#6b8096"/>
-    </linearGradient>
-    <linearGradient id="cqTop" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#c3d2e1"/>
-    </linearGradient>
-    <linearGradient id="cqSteelDark" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#b6c6d6"/><stop offset="1" stop-color="#54677d"/>
-    </linearGradient>
-    <linearGradient id="cqLeather" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#7d5024"/><stop offset=".3" stop-color="#a9713c"/><stop offset=".72" stop-color="#6b411a"/><stop offset="1" stop-color="#46280f"/>
-    </linearGradient>
-    <radialGradient id="cqSeat" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="#0b2545" stop-opacity=".46"/>
-      <stop offset=".6" stop-color="#0b2545" stop-opacity=".18"/>
-      <stop offset="1" stop-color="#0b2545" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
-  <ellipse cx="48" cy="107" rx="26" ry="7.4" fill="url(#cqSeat)"/>
-  <g transform="translate(48 52) rotate(-13)">
-    <rect x="-5.6" y="-4" width="11.2" height="40" rx="4" fill="url(#cqLeather)" stroke="#3a210e" stroke-width=".9"/>
-    <g stroke="#3a210e" stroke-width="1.4" opacity=".5" stroke-linecap="round">
-      <path d="M-5 -.6 5 1.4M-5 5.4 5 7.4M-5 11.4 5 13.4M-5 17.4 5 19.4M-5 23.4 5 25.4"/>
-    </g>
-    <g stroke="#dcbb90" stroke-width=".9" opacity=".36" stroke-linecap="round">
-      <path d="M-4.8 2.4 4.8 4.2M-4.8 8.4 4.8 10.2M-4.8 14.4 4.8 16.2M-4.8 20.4 4.8 22.2"/>
-    </g>
-    <rect x="-7.4" y="29.4" width="14.8" height="8.2" rx="3.8" fill="url(#cqSteelDark)" stroke="#4a5d73" stroke-width=".9"/>
-    <path d="M-6.6 32.6h13.2" stroke="#eef6ff" stroke-width="1.2" opacity=".6" stroke-linecap="round"/>
-    <path d="M-5.8 37c-4.2 4.2-4.6 9.2-1 12.6 3.2 3 8.4 2.8 11.9-.6" fill="none" stroke="#48280f" stroke-width="5.4" stroke-linecap="round"/>
-    <path d="M-5.8 37c-4.2 4.2-4.6 9.2-1 12.6 3.2 3 8.4 2.8 11.9-.6" fill="none" stroke="#8a5a2b" stroke-width="3.2" stroke-linecap="round"/>
-    <path d="M-9.6 -8.2h19.2l-1.6 6.4h-16z" fill="url(#cqSteelDark)" stroke="#4d6076" stroke-width=".9"/>
-    <path d="M-25 -46h50a4.4 4.4 0 0 1 4.4 4.4v29.8a4.4 4.4 0 0 1-4.4 4.4h-50a4.4 4.4 0 0 1-4.4-4.4V-41.6A4.4 4.4 0 0 1-25-46z" fill="url(#cqSteel)" stroke="#4a5d73" stroke-width="1.3"/>
-    <path d="M-25 -46h50a4.4 4.4 0 0 1 4.4 4.4v5.2h-58.8v-5.2A4.4 4.4 0 0 1-25-46z" fill="url(#cqTop)" stroke="#7d90a6" stroke-width=".8"/>
-    <path d="M-29.4 -35.4h58.8v26.4h-58.8z" fill="#c3d2e1" opacity=".18"/>
-    <path d="M-29.4 -35.4h58.8" stroke="#8b9fb4" stroke-width="1" opacity=".7"/>
-    <path d="M-29.4 -13.4h58.8v1.6h-58.8z" fill="#4d6076" opacity=".4"/>
-    <path d="M-29.4 -6.6h58.8" stroke="#556a80" stroke-width="1.6" opacity=".35"/>
-    <g fill="none" stroke="#5b6f86" stroke-width="1.5" stroke-linejoin="round" opacity=".8">
-      <path d="M-15.4 -31.6 -10.6 -26.4 -15.4 -21.2 -20.2 -26.4Z"/>
-      <path d="M0 -31.6 4.8 -26.4 0 -21.2 -4.8 -26.4Z"/>
-      <path d="M15.4 -31.6 20.2 -26.4 15.4 -21.2 10.6 -26.4Z"/>
-    </g>
-    <g fill="#7f93a9">
-      <circle cx="-15.4" cy="-26.4" r="1.5"/><circle cx="0" cy="-26.4" r="1.5"/><circle cx="15.4" cy="-26.4" r="1.5"/>
-    </g>
-    <path d="M-29.4 -42.4c-5 12.4-6 25.6-3 38.4" fill="none" stroke="#ffffff" stroke-width="2" opacity=".55" stroke-linecap="round"/>
-    <g fill="#eaf2fb" stroke="#6b7f95" stroke-width=".8">
-      <circle cx="-27.4" cy="-43.4" r="1.4"/><circle cx="27.4" cy="-43.4" r="1.4"/>
-      <circle cx="-27.4" cy="-9.6" r="1.4"/><circle cx="27.4" cy="-9.6" r="1.4"/>
-    </g>
-    <path d="M24.6 -46c3.6 1.8 5.2 5.8 5.2 12.4v26.2" fill="none" stroke="#5a6d83" stroke-width="1.6" opacity=".45"/>
-    <path d="M-28 -12.4c8.4 1.6 48.6 1.6 56 0" fill="none" stroke="#435668" stroke-width="1.4" opacity=".3"/>
-  </g>
-  <g fill="#bae6fd" opacity=".95">
-    <path d="M17.4 28.6l-3.4 7.6h2.8l-2 5.6 5.8-8.2h-3l1.8-5z"/>
-    <path d="M78.6 74.6l-2.6 5.8h2.2l-1.6 4.2 4.4-6.2h-2.3l1.3-3.8z" opacity=".8"/>
-  </g>
-  <g stroke="#7dd3fc" stroke-width="1.6" stroke-linecap="round" opacity=".8">
-    <path d="M27.6 86.6l-4 3.4M30.4 90.6l-5.2 1.4"/>
-    <path d="M68.6 28.6l3.6-3M70.4 33.2l5-1.2"/>
-  </g>
-  <g fill="#e0f2fe">
-    <circle cx="21.6" cy="26.4" r="1.2" opacity=".85"/><circle cx="75.4" cy="82.4" r="1.2" opacity=".8"/>
-    <circle cx="33.4" cy="92.4" r="1" opacity=".65"/><circle cx="66.4" cy="25.6" r="1" opacity=".6"/>
-  </g>`,
-  vooy: `
-  <defs>
-    <linearGradient id="vySkin" x1=".2" y1="0" x2=".72" y2="1">
-      <stop offset="0" stop-color="#a6f6ba"/><stop offset=".38" stop-color="#4fc46c"/><stop offset="1" stop-color="#0f5b28"/>
-    </linearGradient>
-    <linearGradient id="vyFinger" x1="0" y1="0" x2=".85" y2="1">
-      <stop offset="0" stop-color="#b5ffc8"/><stop offset=".4" stop-color="#5ccb77"/><stop offset="1" stop-color="#177034"/>
-    </linearGradient>
-    <radialGradient id="vySeat" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="#0b2545" stop-opacity=".5"/>
-      <stop offset=".6" stop-color="#0b2545" stop-opacity=".2"/>
-      <stop offset="1" stop-color="#0b2545" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
-  <ellipse cx="48" cy="107" rx="27" ry="7.2" fill="url(#vySeat)"/>
-  <path d="M34.6 86.4h26.8c3 0 5.4 2.4 5.6 5.4l.4 6.4c.2 3-1.8 5.2-4.8 5.2H33.4c-3 0-5-2.2-4.8-5.2l.4-6.4c.2-3 2.6-5.4 5.6-5.4z" fill="url(#vySkin)" stroke="#12552a" stroke-width="1.3"/>
-  <path d="M21 63c0-8 1.4-13.6 4.4-16.4-1-3.2-.4-6.4 2-8.4 2.6-2.2 6-2 8.2.4 1.6-2.2 4.2-3.2 6.8-2.4 2.8.8 4.6 3.2 4.8 6.2 1.4-2.4 4-3.8 6.8-3.4 2.8.4 4.8 2.6 5.2 5.4 2.8-.6 5.6.6 7.2 3 1.6 2.4 1.6 5.6 0 8.4 3.4 2.6 5.2 8 5.2 15.4v16.4c0 9.6-5.8 15.2-15.4 15.2H36.4c-9.6 0-15.4-5.6-15.4-15.2z" fill="url(#vySkin)" stroke="#12552a" stroke-width="1.4" stroke-linejoin="round"/>
-  <g fill="#e6ffe9" opacity=".22">
-    <path d="M23.6 52h48.8v18H23.6z"/>
-  </g>
-  <g fill="url(#vyFinger)" stroke="#12552a" stroke-width="1.3">
-    <path d="M23.4 40.6c0-4.6 2.6-7.6 6.6-7.6s6.6 3 6.6 7.6V64H23.4z"/>
-    <path d="M36.6 38.6c0-4.8 2.7-7.9 6.8-7.9s6.8 3.1 6.8 7.9V64H36.6z"/>
-    <path d="M50.2 38.9c0-4.8 2.7-7.9 6.8-7.9s6.8 3.1 6.8 7.9V64H50.2z"/>
-    <path d="M63.8 40.6c0-4.6 2.6-7.6 6.6-7.6s6.6 3 6.6 7.6V64H63.8z"/>
-  </g>
-  <g fill="#ffffff" opacity=".28">
-    <path d="M25.6 38.6c.6-2.4 2.4-4 4.8-4.2-1 1.8-1.4 4-1.4 6.4v4h-3.4z"/>
-    <path d="M38.8 36.6c.6-2.4 2.4-4 4.8-4.2-1 1.8-1.4 4-1.4 6.4v4h-3.4z"/>
-    <path d="M52.4 36.9c.6-2.4 2.4-4 4.8-4.2-1 1.8-1.4 4-1.4 6.4v4h-3.4z"/>
-    <path d="M66 38.6c.6-2.4 2.4-4 4.8-4.2-1 1.8-1.4 4-1.4 6.4v4H66z"/>
-  </g>
-  <g stroke="#0f4d26" stroke-width="1.4" stroke-linecap="round" opacity=".4" fill="none">
-    <path d="M36.8 42.6c-.4 6 0 13 .6 20M50.4 42.9c-.4 6 0 13 .6 20M64 42.6c-.4 6 0 13 .6 20"/>
-  </g>
-  <path d="M22.8 66.4c-2.4 7.8 1.6 13.8 8.6 15.6 6.4 1.6 12.8-.6 17.2-5.4" fill="none" stroke="#12552a" stroke-width="15.6" stroke-linecap="round"/>
-  <path d="M22.8 66.4c-2.4 7.8 1.6 13.8 8.6 15.6 6.4 1.6 12.8-.6 17.2-5.4" fill="none" stroke="url(#vySkin)" stroke-width="13" stroke-linecap="round"/>
-  <path d="M20 67.8c-1.6 6.8 1.8 12 8 13.6" fill="none" stroke="#c8ffd8" stroke-width="1.8" stroke-linecap="round" opacity=".5"/>
-  <path d="M29.4 69.2c2.8 3.4 6.8 5.2 11 4.8" fill="none" stroke="#0f4d26" stroke-width="1.4" stroke-linecap="round" opacity=".4"/>
-  <path d="M39.4 75.4c-1.4 3.6-1.2 7 .6 9.8" fill="none" stroke="#0f4d26" stroke-width="1.4" stroke-linecap="round" opacity=".35"/>
-  <path d="M28 81.4c11 2.4 22 2 32.4-1.4" fill="none" stroke="#0f4d26" stroke-width="1.6" opacity=".3"/>
-  <path d="M24.6 52.6c-.4 7.6 1 14 4 18.6" fill="none" stroke="#d8ffe4" stroke-width="1.6" stroke-linecap="round" opacity=".38"/>
-  <path d="M71.4 56c.4 6.6-.6 12-3.2 15.8" fill="none" stroke="#d8ffe4" stroke-width="1.5" stroke-linecap="round" opacity=".3"/>`,
-};
-
 /* 히어로 정체성 — 지도 상세·비서현황 카드에 함께 표시 */
 const HERO = {
   huhu: '캡틴 아메리카',
@@ -358,18 +77,9 @@ const HERO = {
   vooy: '헐크'
 };
 
-/* 같은 아이콘이 화면 여러 곳(지도·상세·채팅·비서현황)에 들어가므로
-   그라디언트/필터 id가 겹치지 않게 사본마다 접미사를 붙인다.
-   (겹치면 브라우저가 숨은 첫 사본의 정의를 잡아 색이 깨진다) */
-let artSeq = 0;
+/* 캐릭터 그림은 heroes.js(영화풍 풀바디 SVG)에서 가져온다 — 여기서는 흉상(아바타)만 쓴다 */
 function charArt(id) {
-  const art = CHAR_ART[id];
-  if (!art) return null;
-  const n = ++artSeq;
-  const html = art
-    .replace(/id="([\w-]+)"/g, (m, k) => `id="${k}-${n}"`)
-    .replace(/url\(#([\w-]+)\)/g, (m, k) => `url(#${k}-${n})`);
-  return `<svg class="char-svg" viewBox="0 0 96 120" aria-hidden="true" focusable="false">${html}</svg>`;
+  return window.HeroArt && window.HeroArt.has(id) ? window.HeroArt.bust(id) : null;
 }
 
 /* ---------------- tiny storage ---------------- */
@@ -1029,6 +739,7 @@ function renderAll() {
   renderRoomHead();
   onMessagesChanged(true);
   renderComposerBars();
+  document.dispatchEvent(new CustomEvent('tower:data', { detail: { full: true } }));
 }
 
 function renderNonChat() {
@@ -1038,6 +749,7 @@ function renderNonChat() {
   renderMemos();
   renderLinkPanel();
   if (zoneOpenId) renderZoneSheet(zoneOpenId);
+  document.dispatchEvent(new CustomEvent('tower:data', { detail: { tasks: true } }));
 }
 
 function renderMeta() {
@@ -1437,6 +1149,7 @@ function onMessagesChanged(force) {
   renderUnreadBadges();
   if (activeTab === 'status') renderAgents();
   markSeenIfVisible();
+  document.dispatchEvent(new CustomEvent('tower:data', { detail: { messages: true } }));
 }
 
 /* ---------------- 자동 스크롤 (카톡처럼 최신 = 맨 아래) ---------------- */
@@ -2942,7 +2655,9 @@ function setTab(tab, opts) {
    ========================================================= */
 el.tabbar.addEventListener('click', (e) => {
   const btn = e.target.closest('.tab');
-  if (btn) setTab(btn.dataset.tab);
+  if (!btn) return;
+  if (btn.dataset.tab === 'map' && window.TowerGame) { window.TowerGame.enter(); return; }
+  setTab(btn.dataset.tab);
 });
 
 el.syncBtn.addEventListener('click', () => loadState({ manual: true }));
@@ -3394,7 +3109,7 @@ function schedulePoll(soon) {
   const visible = document.visibilityState === 'visible';
   if (!visible) return;
   /* Realtime 이 붙어도 publication 설정이 없으면 신호가 안 올 수 있어 회의실에선 4초 확인을 유지 */
-  const fast = activeTab === 'chat';
+  const fast = activeTab === 'chat' || document.body.classList.contains('in-game');
   const delay = soon ? 1200 : (fast ? SUPABASE.pollFastMs : SUPABASE.pollSlowMs);
   pollTimer = setTimeout(async () => {
     if (!state) { schedulePoll(); return; }

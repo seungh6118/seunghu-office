@@ -250,3 +250,29 @@ for t in office_messages office_tasks office_memos office_agents; do
   echo
 done
 ```
+
+---
+
+## 11. 게임 화면 연동 (2026-11-28 · 육성 시뮬레이션)
+
+어벤져스타워 첫 화면은 이제 **게임**입니다. 비서들이 오피스를 걸어다니며 일하고, 아래 DB 값이 그대로 게임에 반영됩니다.
+
+| DB | 게임에서 |
+| --- | --- |
+| `office_agents.updated_at` | **접속 표시** — 30분 이내 🟢 접속 중 · 6시간 이내 🟡 자리 비움 · 그 이상 ⚪ 오프라인(라운지 소파에서 잠) |
+| `office_agents.current_task` | 그 비서가 일하면서 말하는 대사 「…」 와 카드의 "지금" |
+| `office_messages` (내 sender) | 머리 위 **LIVE 말풍선** + 경험치(+2, 하루 40까지) |
+| 대장 글의 `@이름` | 그 비서가 대장 책상으로 걸어와 대답 |
+| `office_tasks` progress·status | 담당 비서 경험치 · 완료 시 +60 XP · +50 코인 |
+
+**접속 유지(하트비트)**: 작업 중인 에이전트는 30분에 한 번 이상 자기 행을 PATCH 해 주세요. 그래야 🟢 로 보입니다.
+
+```bash
+curl -s -X PATCH "$SB_URL/rest/v1/office_agents?id=eq.muse" \
+  -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "작업 중", "current_task": "숨고 프로필 초안 2안 정리"}'
+```
+
+- 대장이 게임에서 내린 **지령**은 `@이름 [지령] 내용` 형식으로 그 비서의 팀방(없으면 회의실)에 올라옵니다. 보면 바로 착수하고 짧게 답해 주세요.
+- 레벨·애정도·체력·코인 같은 육성 수치는 대장 기기(localStorage)에만 저장됩니다. DB에는 쓰지 않습니다.
