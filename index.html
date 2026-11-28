@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="어벤져스타워" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <link rel="stylesheet" href="styles.css?v=20261128-artifacts" />
+  <link rel="stylesheet" href="styles.css?v=20261128-mobilechat" />
 </head>
 <body>
   <header class="app-header">
@@ -25,7 +25,7 @@
         </span>
         <div class="brand-text">
           <h1>어벤져스타워</h1>
-          <p class="brand-sub">승후님 전용 · AVENGERS TOWER</p>
+          <p class="brand-sub"><span class="brand-sub-full">승후님 전용 · AVENGERS TOWER</span><span class="brand-sub-short">승후님 전용 · AVENGERS</span></p>
         </div>
       </div>
       <button class="sync-badge" id="sync-btn" type="button" title="state.json + Supabase 실시간 DB 새로 불러오기">
@@ -143,16 +143,22 @@
       <ul class="msg-list" id="msg-list" aria-live="polite"></ul>
 
       <form class="composer" id="chat-form" autocomplete="off">
-        <div class="composer-top">
-          <label class="sender-pick">
-            <span>보내는 사람</span>
-            <select id="chat-sender"></select>
-          </label>
+        <div class="composer-panel" id="composer-panel" inert>
+          <div class="composer-row">
+            <span class="composer-label">보내는 사람</span>
+            <div class="sender-chips" id="sender-chips" aria-label="보내는 사람 선택"></div>
+          </div>
           <div class="mention-chips" id="mention-chips" aria-label="멘션 추가"></div>
         </div>
-        <div class="composer-input">
-          <textarea id="chat-input" rows="2" placeholder="할 말을 적어 주세요" aria-label="메시지"></textarea>
-          <button class="send-btn" type="submit">보내기</button>
+        <div class="composer-bar">
+          <button class="sender-toggle" id="sender-toggle" type="button" aria-expanded="false" aria-controls="composer-panel" title="보내는 사람 바꾸기">
+            <span class="st-emoji" id="sender-toggle-emoji" aria-hidden="true">👑</span>
+            <span class="st-name" id="sender-toggle-name">승후</span>
+            <span class="st-caret" aria-hidden="true">▾</span>
+          </button>
+          <textarea id="chat-input" rows="1" placeholder="할 말을 적어 주세요" aria-label="메시지" enterkeyhint="send"></textarea>
+          <button class="send-btn" type="submit">전송</button>
+          <select id="chat-sender" class="visually-hidden" tabindex="-1" aria-hidden="true"></select>
         </div>
         <p class="composer-hint" id="chat-hint">브라우저에 저장됩니다.</p>
       </form>
@@ -262,6 +268,6 @@
     </section>
   </main>
 
-  <script src="app.js?v=20261128-artifacts"></script>
+  <script src="app.js?v=20261128-mobilechat"></script>
 </body>
 </html>

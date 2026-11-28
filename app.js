@@ -382,6 +382,7 @@ const el = {};
 ['sync-btn', 'sync-time', 'load-error', 'tabbar', 'hq-summary', 'hq-stats',
   'room-chips', 'map-stage', 'map-img', 'room-labels', 'characters', 'map-detail',
   'chat-rooms', 'msg-list', 'chat-form', 'chat-sender', 'mention-chips', 'chat-input', 'chat-hint',
+  'sender-chips', 'sender-toggle', 'sender-toggle-emoji', 'sender-toggle-name', 'composer-panel',
   'project-list', 'task-form', 'task-emoji', 'task-title', 'task-next', 'task-status', 'task-owner',
   'agent-cards', 'schedule-list', 'memo-form', 'memo-input', 'memo-list'
 ].forEach(id => {
@@ -820,6 +821,58 @@ function allMessages() {
   return seed.concat(live).sort((a, b) => new Date(a.at) - new Date(b.at));
 }
 
+/* ---------------- 카톡형 컴포저: 접힘 ↔ 펼침 ---------------- */
+let composerSuppressOpen = false;
+
+function currentSenderId() {
+  const v = el.chatSender && el.chatSender.value;
+  return COMPOSER_IDS.includes(v) ? v : OWNER_ID;
+}
+
+function syncSenderUI() {
+  const cur = currentSenderId();
+  const c = charById(cur);
+  if (el.senderToggleEmoji) el.senderToggleEmoji.textContent = c.emoji || '👑';
+  if (el.senderToggleName) el.senderToggleName.textContent = c.name;
+  if (el.senderChips) {
+    el.senderChips.querySelectorAll('[data-sender]').forEach((b) => {
+      const on = b.dataset.sender === cur;
+      b.classList.toggle('is-active', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+}
+
+function autoGrowComposer() {
+  const t = el.chatInput;
+  if (!t) return;
+  if (!el.chatForm.classList.contains('is-open')) { t.style.height = ''; return; }
+  t.style.height = 'auto';
+  t.style.height = `${Math.min(110, Math.max(40, t.scrollHeight))}px`;
+}
+
+function setComposerOpen(open) {
+  if (!el.chatForm) return;
+  const isOpen = !!open;
+  el.chatForm.classList.toggle('is-open', isOpen);
+  if (el.senderToggle) el.senderToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  /* 접힌 동안엔 패널 안 칩을 탭·탭키 대상에서 뺀다 */
+  if (el.composerPanel) el.composerPanel.inert = !isOpen;
+  if (!isOpen) {
+    if (el.chatInput) el.chatInput.style.height = '';
+  } else {
+    autoGrowComposer();
+  }
+}
+
+/* 칩 선택 뒤 입력창으로 돌아갈 때 패널이 다시 펼쳐지지 않게 */
+function focusComposerQuietly() {
+  if (!el.chatInput) return;
+  composerSuppressOpen = true;
+  el.chatInput.focus();
+  composerSuppressOpen = false;
+}
+
 function renderComposer() {
   if (!state) return;
   const options = COMPOSER_IDS.map((id) => {
@@ -834,6 +887,14 @@ function renderComposer() {
     const c = charById(id);
     return `<button class="mention-chip" type="button" data-mention="${esc(c.name)}">@${esc(c.name)}</button>`;
   }).join('');
+
+  if (el.senderChips) {
+    el.senderChips.innerHTML = COMPOSER_IDS.map((id) => {
+      const c = charById(id);
+      return `<button class="sender-chip" type="button" data-sender="${esc(c.id)}" aria-pressed="false">${esc(c.emoji)} ${esc(c.name)}</button>`;
+    }).join('');
+  }
+  syncSenderUI();
 }
 
 function renderChatRooms() {
@@ -1031,7 +1092,13 @@ function setTab(tab, opts) {
   write(KEY.tab, tab);
   try { history.replaceState(null, '', `#${tab}`); } catch (e) { /* ignore */ }
   if (!opts || opts.scroll !== false) window.scrollTo({ top: 0, behavior: 'smooth' });
-  if (tab === 'chat') updateChatHint();
+  if (tab === 'chat') {
+    updateChatHint();
+    /* 적어 둔 글은 펼친 상태로 되살림 */
+    if (el.chatInput && el.chatInput.value.trim()) setComposerOpen(true);
+  } else {
+    setComposerOpen(false);
+  }
 }
 
 /* ---------------- events ---------------- */
@@ -1082,6 +1149,39 @@ el.chatRooms.addEventListener('click', (e) => {
   renderChat();
 });
 
+if (el.senderToggle) {
+  el.senderToggle.addEventListener('click', () => {
+    setComposerOpen(!el.chatForm.classList.contains('is-open'));
+  });
+}
+
+if (el.senderChips) {
+  el.senderChips.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-sender]');
+    if (!b) return;
+    el.chatSender.value = b.dataset.sender;
+    syncSenderUI();
+    if (!el.chatInput.value.trim()) setComposerOpen(false);
+    focusComposerQuietly();
+  });
+}
+
+el.chatInput.addEventListener('focus', () => {
+  if (!composerSuppressOpen) setComposerOpen(true);
+});
+el.chatInput.addEventListener('input', autoGrowComposer);
+el.chatInput.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  el.chatInput.blur();
+  setComposerOpen(false);
+});
+
+/* 입력창 바깥을 누르면 내용이 비어 있을 때 슬림 바로 접기 */
+document.addEventListener('pointerdown', (e) => {
+  if (!el.chatForm || el.chatForm.contains(e.target)) return;
+  if (!el.chatInput.value.trim()) setComposerOpen(false);
+}, true);
+
 el.mentionChips.addEventListener('click', (e) => {
   const b = e.target.closest('[data-mention]');
   if (!b) return;
@@ -1129,9 +1229,11 @@ el.chatForm.addEventListener('submit', async (e) => {
   renderChat();
   renderSyncBadge();
   if (btn) btn.disabled = false;
+  setComposerOpen(false);
+  el.chatInput.blur();
+  autoGrowComposer();
   const last = el.msgList.lastElementChild;
   if (last) last.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  el.chatInput.focus();
 });
 
 /* work */
