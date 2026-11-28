@@ -729,7 +729,8 @@ function renderMap() {
   el.roomLabels.innerHTML = (state.rooms || []).map((r) => {
     const sel = selected && selected.type === 'room' && selected.id === r.id;
     return `<button class="room-label ${sel ? 'is-selected' : ''}" type="button"
-      data-room="${esc(r.id)}" style="left:${Number(r.x)}%;top:${Number(r.y)}%">
+      data-room="${esc(r.id)}" style="left:${Number(r.x)}%;top:${Number(r.y)}%"
+      aria-label="${esc(r.emoji)} ${esc(r.name)} — 회의실에서 보기" title="${esc(r.name)} 회의실로 이동">
       <span class="room-emoji" aria-hidden="true">${esc(r.emoji)}</span><span class="room-name">${esc(r.name)}</span>
     </button>`;
   }).join('');
@@ -770,7 +771,8 @@ function renderDetail() {
         <div class="detail-row"><span class="k">지금 하는 일</span><span class="v is-strong">${esc(c.task || '—')}</span></div>
         <div class="detail-row"><span class="k">다음</span><span class="v">${esc(c.next || '—')}</span></div>
         <div class="detail-row"><span class="k">최근 활동</span><span class="v">${esc(c.lastActive || '—')}</span></div>
-      </div>`;
+      </div>
+      ${c.room ? `<button class="detail-jump" type="button" data-open-room="${esc(c.room)}">${esc(r.emoji)} ${esc(r.name)} 회의실에서 보기 →</button>` : ''}`;
   } else {
     const r = roomById(selected.id);
     const members = (state.characters || []).filter((c) => c.room === r.id);
@@ -787,7 +789,8 @@ function renderDetail() {
       <div class="detail-body">
         <div class="detail-row"><span class="k">이 방에서</span><span class="v">${(r.work || []).map((w) => `· ${esc(w)}`).join('<br>') || '—'}</span></div>
         <div class="detail-row"><span class="k">자리</span><span class="v">${members.length ? members.map((m) => `${esc(m.emoji)} ${esc(m.name)}`).join(' · ') : '비어 있음'}</span></div>
-      </div>`;
+      </div>
+      <button class="detail-jump" type="button" data-open-room="${esc(r.id)}">${esc(r.emoji)} ${esc(r.name)} 회의실에서 보기 →</button>`;
   }
   el.mapDetail.hidden = false;
 }
@@ -800,6 +803,21 @@ function selectOnMap(type, id, scroll) {
   if (scroll) {
     requestAnimationFrame(() => el.mapDetail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
   }
+}
+
+/* 지도 위 방 핀·라벨, 상단 상태 칩을 누르면 회의실 탭에서 그 방 필터로 바로 이동 */
+function openRoomInChat(roomId) {
+  const id = String(roomId == null ? '' : roomId).trim();
+  if (!(state.rooms || []).some((r) => r.id === id)) return;
+  activeRoom = id;
+  write(KEY.room, activeRoom);
+  selected = { type: 'room', id };
+  renderMap();
+  renderRoomChips();
+  renderDetail();
+  renderChatRooms();
+  renderChat();
+  setTab('chat');
 }
 
 /* ---------------- tab 2: meeting room ---------------- */
@@ -1127,17 +1145,19 @@ el.roomChips.addEventListener('click', (e) => {
     return;
   }
   const jump = e.target.closest('[data-room-jump]');
-  if (jump) selectOnMap('room', jump.dataset.roomJump, true);
+  if (jump) { openRoomInChat(jump.dataset.roomJump); }
 });
 
 el.mapStage.addEventListener('click', (e) => {
   const char = e.target.closest('[data-char]');
   if (char) { selectOnMap('char', char.dataset.char, true); return; }
   const room = e.target.closest('[data-room]');
-  if (room) selectOnMap('room', room.dataset.room, true);
+  if (room) openRoomInChat(room.dataset.room);
 });
 
 el.mapDetail.addEventListener('click', (e) => {
+  const jump = e.target.closest('[data-open-room]');
+  if (jump) { openRoomInChat(jump.dataset.openRoom); return; }
   if (e.target.closest('[data-close-detail]')) {
     selected = null;
     renderMap();

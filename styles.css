@@ -454,7 +454,9 @@ code {
 }
 .map-img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
 picture { display: block; }
-.map-layer { position: absolute; inset: 0; z-index: 2; }
+/* 레이어는 화면만 덮고 클릭은 통과시킨다 — 핀·라벨 같은 자식만 클릭을 받는다.
+   (예전에는 #characters 레이어가 지도 전체를 덮어 지휘실·대회의실·라운지 라벨 클릭을 삼켰다) */
+.map-layer { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
 
 .map-hint {
   text-align: center;
@@ -466,6 +468,8 @@ picture { display: block; }
 
 .room-label {
   position: absolute;
+  pointer-events: auto;
+  cursor: pointer;
   transform: translate(-50%, -50%);
   display: inline-flex;
   align-items: center;
@@ -485,6 +489,13 @@ picture { display: block; }
   transition: transform .15s ease, background .15s ease, border-color .15s ease;
   z-index: 3;
 }
+/* 보이는 알약보다 손가락 터치 영역을 조금 넓게 (겹치면 캐릭터 핀이 위라 그쪽이 우선) */
+.room-label::before {
+  content: "";
+  position: absolute;
+  inset: -8px -6px;
+  border-radius: 999px;
+}
 .room-label.is-selected {
   background: linear-gradient(180deg, #38bdf8, #0284c7);
   color: #ffffff;
@@ -496,6 +507,8 @@ picture { display: block; }
 /* ---------------- characters ---------------- */
 .char {
   position: absolute;
+  pointer-events: auto;
+  cursor: pointer;
   transform: translate(-50%, -100%);
   display: block;
   border: 0;
@@ -696,6 +709,24 @@ picture { display: block; }
 }
 .detail-row .v { color: var(--text-2); min-width: 0; }
 .detail-row .v.is-strong { color: #12293f; font-weight: 650; }
+.detail-jump {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 13px;
+  padding: 11px 14px;
+  border-radius: 13px;
+  border: 1px solid rgba(2, 132, 199, .3);
+  background: linear-gradient(180deg, #38bdf8, #0284c7);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -.01em;
+  box-shadow: 0 12px 24px -16px rgba(2, 132, 199, .95);
+}
+.detail-jump:active { transform: translateY(1px); }
 .detail-close {
   margin-left: auto;
   border: 1px solid var(--hair);
