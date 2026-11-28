@@ -17,7 +17,7 @@
     vooy: { w: 257, h: 483 },
     seunghu: { w: 260, h: 500 }
   };
-  const VER = '20261128-game3';
+  const VER = '20261128-game4';
   const SPRITE_MAX_H = 150;               /* 가장 큰 캐릭터(왕관 포함)의 월드 높이(px) */
   const K = SPRITE_MAX_H / 500;
 

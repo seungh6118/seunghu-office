@@ -9,7 +9,7 @@
   <title>어벤져스타워</title>
 
   <!-- PWA · iPhone '홈 화면에 추가' 시 주소창 없는 풀스크린 앱 -->
-  <link rel="manifest" href="manifest.json?v=20261128-game3" />
+  <link rel="manifest" href="manifest.json?v=20261128-game4" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="어벤져스타워" />
@@ -21,8 +21,8 @@
 
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
-  <link rel="stylesheet" href="styles.css?v=20261128-game3" />
-  <link rel="stylesheet" href="game.css?v=20261128-game3" />
+  <link rel="stylesheet" href="styles.css?v=20261128-game4" />
+  <link rel="stylesheet" href="game.css?v=20261128-game4" />
 </head>
 <body>
   <script>
@@ -49,8 +49,9 @@
     <div class="g-ticker g-ui" id="g-ticker" data-g="log" role="button" tabindex="0" aria-label="업무 일지"></div>
     <div class="g-dock g-ui" id="g-dock" aria-label="비서 목록"></div>
     <nav class="g-actions g-ui" id="g-actions" aria-label="게임 메뉴">
-      <button type="button" data-g="quests"><span>📋</span>퀘스트</button>
+      <button type="button" data-g="chat"><span>💬</span>채팅<i class="g-bdg" id="g-chat-badge" hidden></i></button>
       <button type="button" data-g="order"><span>📣</span>지령</button>
+      <button type="button" data-g="quests"><span>📋</span>퀘스트</button>
       <button type="button" data-g="teams"><span>👥</span>팀방</button>
       <button type="button" data-g="log"><span>📜</span>일지</button>
       <button type="button" data-g="desk"><span>🗂️</span>서류함</button>
@@ -192,6 +193,9 @@
                 <p id="cr-sub">전원</p>
               </div>
             </div>
+            <button class="cr-icon-btn" id="cr-edit" type="button" aria-label="방 이름 바꾸기">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-4-4L4 16v4Z" /><path d="m13.5 6.5 4 4" /></svg>
+            </button>
             <button class="cr-icon-btn" id="cr-search-btn" type="button" aria-label="대화 검색" aria-expanded="false">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg>
             </button>
@@ -201,6 +205,7 @@
             <span class="cr-search-count" id="cr-search-count"></span>
           </div>
           <nav class="cr-rooms" id="cr-rooms" aria-label="방 빠른 전환"></nav>
+          <div class="cr-members" id="cr-members" aria-label="이 방의 멤버"></div>
 
           <div class="cr-body" id="cr-body">
             <ol class="msg-list" id="msg-list" aria-live="polite"></ol>
@@ -318,8 +323,8 @@
 
   <div class="toast-wrap" id="toast-wrap" aria-live="polite"></div>
 
-  <script src="heroes.js?v=20261128-game3"></script>
-  <script src="app.js?v=20261128-game3"></script>
-  <script src="game.js?v=20261128-game3"></script>
+  <script src="heroes.js?v=20261128-game4"></script>
+  <script src="app.js?v=20261128-game4"></script>
+  <script src="game.js?v=20261128-game4"></script>
 </body>
 </html>

@@ -411,3 +411,75 @@ body.g-card-open .g-dock, body.g-card-open .g-actions { display: none; }
 .gc-checkin { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 40px; margin-top: 8px; border: 1px dashed #94a3b8; border-radius: 14px; background: #f8fafc; color: #334155; font-size: 12.5px; font-weight: 800; }
 .gc-checkin small { font-size: 11px; font-weight: 600; color: #8592a6; }
 .gc-checkin:active { background: #eef2f7; }
+
+/* =========================================================
+   채팅 — 게임 화면 위에 띄우는 채팅방(전체 회의실 · 1팀방 · 2팀방)
+   ========================================================= */
+body.g-chat > #chat-room {
+  display: flex; position: fixed; left: 0; right: 0; top: var(--vv-top, 0px); height: var(--vv-h, 100dvh); z-index: 80;
+  border-radius: 0; border: 0; animation: room-in .24s var(--ease) both;
+}
+body.g-chat .cr-back { display: grid; }
+body.g-chat .cr-rooms { display: flex; }
+@media (min-width: 900px) {
+  body.g-chat > #chat-room {
+    left: auto; right: 16px; top: calc(var(--vv-top, 0px) + 16px); height: calc(var(--vv-h, 100dvh) - 32px); width: 440px;
+    border-radius: 22px; border: 1px solid var(--hair); box-shadow: 0 30px 70px -26px rgba(5, 20, 45, .7);
+  }
+}
+
+/* 방 멤버 줄 — 누가 들어 있고 접속 중인지 */
+.cr-members { flex: 0 0 auto; display: flex; gap: 6px; padding: 8px 10px; overflow-x: auto; scrollbar-width: none; background: rgba(255, 255, 255, .86); border-bottom: 1px solid var(--hair); }
+.cr-members::-webkit-scrollbar { display: none; }
+.cm-one { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 11px 0 3px; border: 1px solid var(--hair); border-radius: 999px; background: #fff; font-size: 12.5px; }
+.cm-one b { font-weight: 750; color: #1e293b; }
+.cm-one em { font-style: normal; font-size: 10px; font-weight: 800; color: #7c3aed; background: #f3efff; border-radius: 6px; padding: 0 5px; }
+.cm-av { position: relative; display: block; width: 30px; height: 30px; border-radius: 50%; }
+.cm-av-in { display: block; width: 30px; height: 30px; border-radius: 50%; overflow: hidden; background: #eaf4ff; }
+.cm-av-in img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 28%; display: block; }
+.cm-av i { position: absolute; right: -2px; bottom: -2px; width: 11px; height: 11px; border-radius: 50%; border: 2px solid #fff; background: #10b981; }
+.cm-one.is-away .cm-av i { background: #f59e0b; }
+.cm-one.is-offline .cm-av i { background: #94a3b8; }
+.cm-one.is-offline .cm-av-in { filter: grayscale(.85); opacity: .75; }
+.cm-one.is-offline b { color: #94a3b8; }
+.cm-convene { flex: 0 0 auto; height: 36px; padding: 0 13px; border: 0; border-radius: 999px; background: linear-gradient(180deg, #f59e0b, #d97706); color: #fff; font-size: 12.5px; font-weight: 800; box-shadow: 0 6px 14px -8px rgba(217, 119, 6, .9); }
+.cm-convene:active { transform: scale(.96); }
+
+/* 전원 소집 시트 */
+.convene-who { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.cw { position: relative; display: grid; justify-items: center; gap: 3px; padding: 7px 2px 6px; border-radius: 15px; background: #fff; font-size: 11.5px; }
+.cw b { font-weight: 800; color: #334155; }
+.cw-av { display: block; width: 42px; height: 42px; border-radius: 14px; overflow: hidden; background: #eaf4ff; }
+.cw-av img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 28%; display: block; }
+.cw i { position: absolute; right: 8px; top: 6px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid #fff; background: #10b981; }
+.cw.is-away i { background: #f59e0b; }
+.cw.is-offline i { background: #94a3b8; }
+
+/* 게임 하단 메뉴 6칸 + 채팅 배지 */
+.g-actions { grid-template-columns: repeat(6, 1fr); }
+.g-actions button { position: relative; }
+.g-bdg { position: absolute; top: 1px; left: calc(50% + 4px); min-width: 17px; height: 17px; padding: 0 5px; border-radius: 99px; background: #e5484d; color: #fff; font-size: 10px; font-style: normal; font-weight: 850; line-height: 17px; text-align: center; box-shadow: 0 0 0 2px #fff; }
+@media (min-width: 900px) { .g-actions { width: 600px; } body.g-chat .g-actions { left: calc((100% - 456px) / 2); } }
+
+/* 채팅 허브 시트 */
+.ch-list { display: grid; gap: 8px; }
+.ch-row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 12px; border: 1px solid var(--hair); border-radius: 18px; background: #fff; text-align: left; }
+.ch-row:active { background: #f1f7fd; }
+.ch-ico { flex: 0 0 auto; display: grid; place-items: center; width: 50px; height: 50px; border-radius: 17px; font-size: 24px; background: linear-gradient(145deg, #e0f2fe, #bae6fd); }
+.ch-ico.t1 { background: linear-gradient(145deg, #fee2e2, #fecaca); }
+.ch-ico.t2 { background: linear-gradient(145deg, #fef3c7, #fde68a); }
+.ch-main { flex: 1; min-width: 0; display: grid; gap: 4px; }
+.ch-main b { font-size: 15.5px; font-weight: 800; letter-spacing: -.03em; display: flex; align-items: center; gap: 6px; }
+.ch-main b em { font-style: normal; font-size: 11px; font-weight: 750; color: #047857; background: #e9fbf3; border-radius: 99px; padding: 0 7px; }
+.ch-stack { display: flex; }
+.ch-stack span { position: relative; width: 24px; height: 24px; margin-left: -6px; border-radius: 50%; border: 2px solid #fff; background: #eaf4ff; overflow: visible; }
+.ch-stack span:first-child { margin-left: 0; }
+.ch-stack img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; object-position: 50% 28%; display: block; }
+.ch-stack i { position: absolute; right: -2px; bottom: -2px; width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid #fff; background: #10b981; }
+.ch-stack .is-away i { background: #f59e0b; }
+.ch-stack .is-offline i { background: #94a3b8; }
+.ch-stack .is-offline img { filter: grayscale(.85); opacity: .75; }
+.ch-last { font-size: 12.5px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ch-side { flex: 0 0 auto; display: grid; justify-items: end; gap: 6px; font-size: 11px; color: #94a3b8; }
+.ch-side .unread { position: static; }
+.ch-hint { margin: 12px 4px 0; font-size: 11.5px; color: #8592a6; line-height: 1.55; }

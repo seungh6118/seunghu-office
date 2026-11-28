@@ -746,7 +746,10 @@
 
   /* 회의 소집: 접속 중인 비서가 회의실 테이블 주위로 모여 한마디씩 */
   let nextMeetingAt = 0;
+  let lastMeetingAt = -999;
   function startMeeting(now, initiator) {
+    if (now - lastMeetingAt < 20) return true;      /* 같은 소집이 두 번 들어와도 한 번만 */
+    lastMeetingAt = now;
     const members = HERO_IDS.filter((id) => {
       const a = actors[id];
       return a && presence(id).key !== 'offline' && a.act !== 'quest' && !a.chatWith;
@@ -1115,6 +1118,8 @@
         showRealMessage(r, false);
         const id = normSender(r.sender);
         if (id && HERO_IDS.indexOf(id) >= 0) gainMsgXp(id);
+        /* 대장이 @전원/@모두 로 소집하면 모두 회의실로 */
+        if (id === BOSS && Date.now() - ts(r.created_at) < 120000 && /@(전원|모두)/.test(String(r.content || ''))) startMeeting(nowS(), BOSS);
         /* 대장이 @멘션하면 그 비서가 달려온다 */
         if (id === BOSS && Date.now() - ts(r.created_at) < 120000) {
           mentionedIds(r.content).forEach((hid) => {
@@ -1424,6 +1429,7 @@
       ids = (t.members || []).slice().sort((x, y) => (x === t.leader ? -1 : y === t.leader ? 1 : 0));
       const on = ids.filter((id) => presence(id).key === 'online').length;
       sub = `팀장 ${charById(t.leader).name} · 접속 ${on}/${ids.length}`;
+      foot = `<div class="gc-btns one"><button type="button" data-chat-open="${t.id}">💬 ${esc(roomById(t.id).name)} 채팅 열기</button></div>`;
     } else {
       const z = ZONES.find((x) => x.id === rid);
       if (!z) return '';
@@ -1431,6 +1437,7 @@
       ids = zoneMembers(rid);
       sub = ids.length ? `지금 ${ids.length}명이 있어요` : '지금은 비어 있어요';
       if (z.view) foot = `<div class="gc-btns one"><button type="button" data-zone-open="${z.id}">${z.emoji} ${z.name} 현황판 열기</button></div>`;
+      else if (z.id === 'boardroom') foot = `<div class="gc-btns one"><button type="button" data-chat-open="boardroom">💬 ${esc(roomById('boardroom').name)} 채팅 열기</button></div>`;
     }
     const rows = ids.length ? ids.map((id) => {
       const p = presence(id);
@@ -1509,6 +1516,47 @@
   /* =========================================================
      시트 — 퀘스트 · 지령 · 팀방 현황 · 일지 · 서류함 · 도움말
      ========================================================= */
+  function chatHubSheet() {
+    const rooms = ['boardroom', 'team1', 'team2'];
+    const rows = rooms.map((id) => {
+      const r = roomById(id);
+      const last = typeof lastOf === 'function' ? lastOf(id) : null;
+      const n = typeof unreadIn === 'function' ? unreadIn(id) : 0;
+      const ids = typeof senderIdsFor === 'function' ? senderIdsFor(id) : [];
+      const on = ids.filter((x) => presence(x).key === 'online').length;
+      const stack = ids.map((x) => `<span class="is-${presence(x).key}">${charArt(x) || ''}<i></i></span>`).join('');
+      const preview = last ? `${last.authorId === BOSS ? '나' : authorName(last)}: ${previewText(last.text)}` : '아직 대화가 없어요';
+      return `<button class="ch-row" type="button" data-chat-open="${id}">
+        <span class="ch-ico ${id === 'team1' ? 't1' : id === 'team2' ? 't2' : ''}">${esc(r.emoji)}</span>
+        <span class="ch-main"><b>${esc(r.name)}<em>접속 ${on}/${ids.length}</em></b><span class="ch-stack">${stack}</span><span class="ch-last">${esc(preview)}</span></span>
+        <span class="ch-side"><time>${last ? esc(fmtListTime(last.at)) : ''}</time>${n ? `<i class="unread">${n > 99 ? '99+' : n}</i>` : ''}</span></button>`;
+    }).join('');
+    openSheet({
+      emoji: '💬', title: '채팅방', sub: '방마다 들어 있는 멤버와 접속 현황이 보여요',
+      html: `<div class="ch-list">${rows}</div>
+        <button class="ghost-btn is-block" type="button" data-convene-now>📣 전원 소집 회의 (전체 회의실)</button>
+        <p class="ch-hint">1팀방·2팀방에는 그 팀원만 말할 수 있어요. 방 이름은 방 안에서 ✏️ 로 바꿀 수 있어요.</p>`,
+      onClick: (e) => {
+        const o = e.target.closest('[data-chat-open]');
+        if (o) { openChatFromGame(o.dataset.chatOpen); return; }
+        if (e.target.closest('[data-convene-now]')) { closeSheet(); openChatFromGame('boardroom'); setTimeout(() => { if (typeof openConveneSheet === 'function') openConveneSheet(); }, 350); }
+      }
+    });
+  }
+  function openChatFromGame(roomId) {
+    closeSheet();
+    closeCard();
+    if (typeof openChatOverlay === 'function') openChatOverlay(roomId);
+  }
+  function renderChatBadge() {
+    const b = $('g-chat-badge');
+    if (!b || typeof unreadIn !== 'function') return;
+    const n = ['boardroom', 'team1', 'team2'].reduce((sum, id) => sum + unreadIn(id), 0);
+    const t = n > 99 ? '99+' : String(n);
+    b.hidden = n < 1;
+    if (b.textContent !== t) b.textContent = t;
+  }
+
   function questSheet() {
     const m = missionState();
     let rows = [];
@@ -1722,6 +1770,7 @@
         renderZonebar();
         renderDock();
         renderZoneLabels();
+        renderChatBadge();
       }
       if (now > tm.five) { tm.five = now + 5; tickStats(); }
       if (now > tm.twenty) { tm.twenty = now + 20; updateTint(); }
@@ -1772,6 +1821,8 @@
     enter: enterGame,
     exit: exitGame,
     peek: () => Object.keys(actors).map((id) => ({ id, act: actors[id].act, at: actors[id].at, pose: actors[id].pose, x: Math.round(actors[id].pos[0]), y: Math.round(actors[id].pos[1]), pres: presence(id).key, bub: actors[id].bub ? actors[id].bub.text : '' })),
+    presence,
+    convene: () => startMeeting(nowS(), BOSS),
     cam: () => ({ z: cam.z, tx: cam.tx, ty: cam.ty, zmin: cam.zmin }),
     zoomTo: (id, z) => { const a = actors[id]; if (a) { cam.follow = null; focusOn(a.pos[0], a.pos[1] - 60, { z, instant: true }); } }
   };
@@ -1810,6 +1861,8 @@
     if (zc) { openRoom('zone', zc.dataset.zoneChip); return; }
     const tc = t.closest('[data-team-chip]');
     if (tc) { openRoom('team', tc.dataset.teamChip); return; }
+    const co = t.closest('[data-chat-open]');
+    if (co) { openChatFromGame(co.dataset.chatOpen); return; }
     const zo = t.closest('[data-zone-open]');
     if (zo) { if (typeof openZoneSheet === 'function') openZoneSheet(zo.dataset.zoneOpen); return; }
     if (t.closest('[data-boss]')) { selectHero(BOSS, true); return; }
@@ -1833,6 +1886,7 @@
       const k = nav.dataset.g;
       if (k === 'quests') questSheet();
       else if (k === 'order') orderSheet(null);
+      else if (k === 'chat') chatHubSheet();
       else if (k === 'teams') teamsSheet();
       else if (k === 'log') logSheet();
       else if (k === 'desk') menuSheet();

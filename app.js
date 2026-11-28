@@ -59,7 +59,8 @@ const KEY = {
   room: 'seunghuOffice.room.v1',
   seen: 'seunghuOffice.seen.v1',
   draft: 'seunghuOffice.draft.v1',
-  taskFilter: 'seunghuOffice.taskFilter.v1'
+  taskFilter: 'seunghuOffice.taskFilter.v1',
+  roomNames: 'seunghuOffice.roomNames.v1'
 };
 
 const OWNER_ID = 'seunghu';
@@ -117,7 +118,7 @@ const el = {};
   'hq-summary', 'hq-stats', 'room-chips', 'map-stage', 'map-img', 'room-labels', 'characters', 'map-detail',
   'recent-list', 'recent-card',
   'room-list', 'room-pane-foot', 'live-pill', 'chat-room', 'cr-back', 'cr-emoji', 'cr-name', 'cr-sub',
-  'cr-search-btn', 'cr-search', 'cr-search-input', 'cr-search-count', 'cr-rooms', 'cr-body',
+  'cr-members', 'cr-edit', 'cr-search-btn', 'cr-search', 'cr-search-input', 'cr-search-count', 'cr-rooms', 'cr-body',
   'msg-list', 'chat-latest', 'chat-latest-txt', 'drop-hint',
   'chat-form', 'mention-pop', 'cmp-reply', 'cmp-as', 'cmp-tray', 'cmp-plus', 'chat-input', 'cmp-who', 'cmp-send',
   'cmp-menu', 'file-media', 'file-any',
@@ -721,6 +722,7 @@ async function loadState(opts) {
     const data = await res.json();
     if (!data || !Array.isArray(data.characters)) throw new Error('state.json 형식이 올바르지 않습니다');
     state = data;
+    applyRoomNames();
     await loadRemote();
     if (el.loadError) el.loadError.hidden = true;
     if (el.syncBtn) el.syncBtn.classList.remove('is-error');
@@ -827,9 +829,33 @@ function allMessages() {
   return msgCache;
 }
 
+/* 채팅방 이름 — 기본 이름이 있고, 대장님이 방 안에서 ✏️ 로 바꿀 수 있다(이 기기에 저장) */
+const DEFAULT_ROOM_NAMES = { boardroom: '전체 회의실', team1: '1팀 작전실', team2: '2팀 기획실', lounge: '라운지' };
+function applyRoomNames() {
+  if (!state || !Array.isArray(state.rooms)) return;
+  const custom = read(KEY.roomNames, {}) || {};
+  state.rooms.forEach((r) => {
+    if (r.baseName === undefined) r.baseName = r.name;
+    r.name = custom[r.id] || DEFAULT_ROOM_NAMES[r.id] || r.baseName;
+  });
+}
+/* 게임 화면 위에 띄운 채팅(body.g-chat) 에서는 방 3개(전체 회의실 · 1팀방 · 2팀방)만 */
+const GAME_CHAT_ROOMS = ['boardroom', 'team1', 'team2'];
 function chatRooms() {
-  const rooms = ((state && state.rooms) || []).filter((r) => !isZoneRoom(r.id));
+  let rooms = ((state && state.rooms) || []).filter((r) => !isZoneRoom(r.id));
+  if (document.body.classList.contains('g-chat')) {
+    rooms = GAME_CHAT_ROOMS.map((id) => rooms.find((r) => r.id === id)).filter(Boolean);
+    return rooms;
+  }
   return [{ id: 'all', name: '전체', emoji: '🗂️', summary: '모든 방의 대화를 한 번에' }].concat(rooms);
+}
+function presenceKeyOf(id) {
+  if (id === OWNER_ID) return 'online';
+  try { return window.TowerGame && window.TowerGame.presence ? window.TowerGame.presence(id).key : 'online'; } catch (e) { return 'online'; }
+}
+/* 그 방에서 말할 수 있는 사람 — 전체 회의실은 전원, 팀방은 대장 + 그 팀원만 */
+function senderIdsFor(roomId) {
+  return roomId === 'all' || roomId === 'boardroom' ? COMPOSER_IDS.slice() : roomMembers(roomId);
 }
 const chatRoomIds = () => chatRooms().map((r) => r.id).filter((id) => id !== 'all');
 
@@ -853,7 +879,8 @@ function roomSubtitle(roomId) {
     const c = charById(id);
     return team && team.leader === id ? `${c.name}(팀장)` : c.name;
   });
-  return `${names.join(' · ')}`;
+  const on = ids.filter((id) => presenceKeyOf(id) === 'online').length;
+  return `${names.join(' · ')} — 접속 ${on}/${ids.length}`;
 }
 
 /* ---------------- 안 읽은 글 ---------------- */
@@ -956,8 +983,24 @@ function renderRoomStrip() {
   }).join('');
 }
 
+function renderMembers() {
+  if (!el.crMembers) return;
+  const rid = activeRoom === 'all' ? 'boardroom' : activeRoom;
+  const ids = senderIdsFor(rid);
+  const team = teamById(rid);
+  const dots = { online: '🟢 접속 중', away: '🟡 자리 비움', offline: '⚪ 오프라인' };
+  const html = ids.map((id) => {
+    const c = charById(id);
+    const k = presenceKeyOf(id);
+    return `<button class="cm-one is-${k}" type="button" data-member="${esc(c.name)}" title="${esc(c.name)} · ${dots[k]}">
+      <span class="cm-av">${avatarHtml(id, c.name, 'cm-av-in')}<i></i></span><b>${esc(c.name)}</b>${team && team.leader === id ? '<em>팀장</em>' : ''}</button>`;
+  }).join('') + (rid === 'boardroom' ? '<button class="cm-convene" type="button" data-convene>📣 전원 소집</button>' : '');
+  if (el.crMembers.dataset.html !== html) { el.crMembers.innerHTML = html; el.crMembers.dataset.html = html; }
+}
+
 function renderRoomHead() {
   const r = roomById(activeRoom);
+  renderMembers();
   if (el.crEmoji) { el.crEmoji.textContent = r.emoji; el.crEmoji.className = `cr-emoji room-av-${r.id}`; }
   if (el.crName) el.crName.textContent = r.id === 'all' ? '전체 대화' : r.name;
   if (el.crSub) el.crSub.textContent = roomSubtitle(r.id);
@@ -1273,6 +1316,7 @@ function openChatRoom(roomId, opts) {
     replyTo = null;
     closeSearch();
     restoreDraft();
+    if (!senderIdsFor(id).includes(composerSender)) { composerSender = OWNER_ID; }
   }
   if (activeTab !== 'chat') setTab('chat', { fromRoom: true });
   if (!mqDesktop.matches) {
@@ -1296,6 +1340,103 @@ function openChatRoom(roomId, opts) {
   if (o.focus) focusInput();
 }
 
+/* ---------------- 게임 화면 위 채팅 (전체 회의실 · 1팀방 · 2팀방) ----------------
+   채팅방(#chat-room)을 body 로 옮겨 화면 전체(PC 는 오른쪽 패널)에 띄운다. 닫으면 제자리로 돌려놓는다. */
+let chatLayoutHome = null;
+function openChatOverlay(roomId) {
+  if (!state) return;
+  if (!chatLayoutHome) chatLayoutHome = el.chatRoom.parentNode;
+  document.body.classList.add('g-chat');
+  document.body.appendChild(el.chatRoom);
+  openChatRoom(GAME_CHAT_ROOMS.includes(roomId) ? roomId : 'boardroom', { focus: false });
+  renderChatRoom(true);
+  jumpChatToBottom();
+}
+function endGameChat() {
+  if (!document.body.classList.contains('g-chat')) return;
+  document.body.classList.remove('g-chat');
+  if (chatLayoutHome && el.chatRoom.parentNode !== chatLayoutHome) chatLayoutHome.appendChild(el.chatRoom);
+  if (el.chatInput) el.chatInput.blur();
+  hideMentionPop();
+  setMenuOpen(false);
+  if (activeTab === 'chat') setTab('map', { fromRoom: true, keepScroll: true });
+}
+function closeChatOverlay() {
+  if (roomOpen) closeChatRoom(false);
+  else endGameChat();
+}
+window.openChatOverlay = openChatOverlay;
+window.closeChatOverlay = closeChatOverlay;
+
+/* 방 이름 바꾸기 */
+function openRoomNameSheet() {
+  const rid = activeRoom === 'all' ? 'boardroom' : activeRoom;
+  const r = roomById(rid);
+  openSheet({
+    emoji: r.emoji,
+    title: '방 이름 바꾸기',
+    sub: '이 기기에만 저장돼요',
+    html: `<form class="sheet-form" id="room-name-form">
+      <label class="field"><span>방 이름</span><input name="name" type="text" maxlength="14" required value="${esc(r.name)}" placeholder="${esc(DEFAULT_ROOM_NAMES[rid] || r.name)}" /></label>
+      <div class="sheet-actions"><button class="ghost-btn" type="button" data-reset-name>기본 이름으로</button><button class="primary-btn" type="submit">저장</button></div></form>`,
+    onClick: (e) => {
+      if (!e.target.closest('[data-reset-name]')) return;
+      const custom = read(KEY.roomNames, {}) || {};
+      delete custom[rid];
+      write(KEY.roomNames, custom);
+      applyRoomNames();
+      closeSheet();
+      lastRenderSig = '';
+      renderChatRoom(true);
+      toast('기본 이름으로 되돌렸어요');
+    },
+    onSubmit: (e) => {
+      const name = e.target.name.value.trim();
+      if (!name) return;
+      const custom = read(KEY.roomNames, {}) || {};
+      custom[rid] = name;
+      write(KEY.roomNames, custom);
+      applyRoomNames();
+      closeSheet();
+      lastRenderSig = '';
+      renderChatRoom(true);
+      toast(`방 이름을 '${name}'(으)로 바꿨어요`);
+    }
+  });
+}
+
+/* 전원 소집 회의 — 전체 회의실에 소집 글을 남기고, 게임에서는 비서들이 회의실로 모인다 */
+function openConveneSheet() {
+  const ids = COMPOSER_IDS.filter((id) => id !== OWNER_ID);
+  openSheet({
+    emoji: '📣',
+    title: '전원 소집 회의',
+    sub: '모든 비서를 전체 회의실로 불러요',
+    html: `<form class="sheet-form" id="convene-form">
+      <div class="convene-who">${ids.map((id) => {
+        const c = charById(id);
+        const k = presenceKeyOf(id);
+        return `<span class="cw is-${k}">${avatarHtml(id, c.name, 'cw-av')}<b>${esc(c.name)}</b><i></i></span>`;
+      }).join('')}</div>
+      <label class="field"><span>안건 <em>(선택)</em></span><textarea name="agenda" rows="3" maxlength="200" placeholder="예: 이번 주 콘텐츠 일정 점검, 아빠달려 3일차 제목 확정"></textarea></label>
+      <div class="sheet-actions"><button class="primary-btn" type="submit">📣 소집하기</button></div></form>`,
+    onSubmit: (e) => {
+      const agenda = e.target.agenda.value.trim();
+      const body = `📣 @전원 회의 소집합니다${agenda ? `\n안건: ${agenda}` : ''}\n전체 회의실로 모여 주세요.`;
+      const tmp = {
+        id: `tmp-${Date.now()}-convene`, room: 'boardroom', authorId: OWNER_ID, senderName: charById(OWNER_ID).name,
+        quote: '', body, files: [], text: body, at: new Date().toISOString(), status: 'sending'
+      };
+      inflight.push(tmp);
+      processInflight(tmp);
+      closeSheet();
+      if (activeRoom !== 'boardroom') openChatRoom('boardroom');
+      if (window.TowerGame && window.TowerGame.convene) window.TowerGame.convene();
+      toast('📣 전원 소집!');
+    }
+  });
+}
+
 function closeChatRoom(fromPop) {
   if (!roomOpen) return;
   roomOpen = false;
@@ -1311,6 +1452,7 @@ function closeChatRoom(fromPop) {
   }
   updateChatLatestBtn();
   renderRoomList();
+  endGameChat();
 }
 
 /* 지도 위 방 라벨·상단 칩·상세 시트에서: 회의실 탭의 그 방으로 바로 */
@@ -1442,11 +1584,15 @@ function updateMentionPop() {
   const m = /(^|\s)@([^\s@]{0,8})$/.exec(before);
   if (!m) { hideMentionPop(); return; }
   const q = m[2].toLowerCase();
-  const ids = COMPOSER_IDS.filter((id) => id !== composerSender);
+  const ids = senderIdsFor(activeRoom).filter((id) => id !== composerSender);
   const list = ids.map((id) => charById(id)).filter((c) => !q || c.name.toLowerCase().startsWith(q) || c.id.startsWith(q));
-  if (!list.length) { hideMentionPop(); return; }
+  const everyone = (activeRoom === 'all' || activeRoom === 'boardroom') && (!q || '전원'.startsWith(q) || '모두'.startsWith(q));
+  if (!list.length && !everyone) { hideMentionPop(); return; }
   mentionMatch = { start: caret - m[2].length - 1, end: caret };
-  el.mentionPop.innerHTML = list.map((c) => `
+  el.mentionPop.innerHTML = (everyone ? `
+    <button type="button" class="mp-item" data-pick-mention="전원" role="option">
+      <span class="mp-av is-initial" style="--tint:#d97706">📣</span><b>전원</b><span>모든 비서에게</span>
+    </button>` : '') + list.map((c) => `
     <button type="button" class="mp-item" data-pick-mention="${esc(c.name)}" role="option">
       ${avatarHtml(c.id, c.name, 'mp-av')}<b>${esc(c.name)}</b><span>${esc(c.role || '')}</span>
     </button>`).join('');
@@ -1814,8 +1960,8 @@ function openSenderSheet() {
   openSheet({
     emoji: '👤',
     title: '보내는 사람',
-    sub: '대장님 대신 비서 이름으로 남길 때만 바꾸세요',
-    html: `<div class="pick-list">${COMPOSER_IDS.map((id) => {
+    sub: activeRoom === 'all' || activeRoom === 'boardroom' ? '대장님 대신 비서 이름으로 남길 때만 바꾸세요' : `${roomById(activeRoom).name} 멤버만 고를 수 있어요`,
+    html: `<div class="pick-list">${senderIdsFor(activeRoom).map((id) => {
       const c = charById(id);
       return `<button class="pick-item ${id === composerSender ? 'is-active' : ''}" type="button" data-pick-sender="${esc(id)}">
         ${avatarHtml(id, c.name, 'pick-av')}
@@ -2723,7 +2869,15 @@ el.mapDetail.addEventListener('click', (e) => {
 });
 
 /* chat: room head */
-el.crBack.addEventListener('click', () => closeChatRoom(false));
+el.crBack.addEventListener('click', () => {
+  if (document.body.classList.contains('g-chat')) closeChatOverlay(); else closeChatRoom(false);
+});
+if (el.crEdit) el.crEdit.addEventListener('click', openRoomNameSheet);
+if (el.crMembers) el.crMembers.addEventListener('click', (e) => {
+  if (e.target.closest('[data-convene]')) { openConveneSheet(); return; }
+  const m = e.target.closest('[data-member]');
+  if (m) insertMention(m.dataset.member);
+});
 el.crSearchBtn.addEventListener('click', () => {
   const show = el.crSearch.hidden;
   if (show) {
