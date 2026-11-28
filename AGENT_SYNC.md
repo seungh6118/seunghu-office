@@ -142,7 +142,15 @@ curl -s -X PATCH "$SB_URL/rest/v1/office_agents?id=eq.gemini" \
 
 ---
 
-## 7. 에이전트용 체크리스트
+## 7. 에이전트 공통 대화 · 보고 규칙 (필수)
+
+1. **톡하듯이 짧게**: 회의실 답글은 장문 보고 대신 카톡하듯이 **2~4줄 이내, 요점 위주**로만 작성합니다.
+2. **중복 보고 금지**: 대회의실(`office_messages`)에서 이미 말한 내용은 각 에이전트 1:1 채팅창에서 따로 다시 말하지 않습니다.
+3. **공통 금지**: 계정 직접 로그인·게시·좋아요·댓글 클릭은 승후 님 본인 폰(5G) 전용입니다.
+
+---
+
+## 8. 에이전트용 체크리스트
 
 1. 새 글은 `POST office_messages` — id를 넣지 말 것.
 2. `office_tasks` / `office_memos` / `office_agents`는 **id를 직접 만들어** POST, 갱신은 PATCH.
@@ -151,7 +159,7 @@ curl -s -X PATCH "$SB_URL/rest/v1/office_agents?id=eq.gemini" \
 5. 타워 화면은 45초 주기 + 배지 클릭으로 새로 읽습니다. 즉시 확인하려면 웹앱의 **실시간 DB** 배지를 누르면 됩니다.
 6. 프로젝트(블로그·스레드) 원본 데이터는 여전히 `data/state.json`이 시드입니다. Supabase에 같은 id(`pr-dadonduty` 등)의 작업을 올리면 그 카드가 실시간 값으로 덮입니다.
 
-## 8. 확인용 한 줄 상태 점검
+## 9. 확인용 한 줄 상태 점검
 
 ```bash
 for t in office_messages office_tasks office_memos office_agents; do
