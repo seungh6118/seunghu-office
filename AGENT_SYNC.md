@@ -1,7 +1,7 @@
 # AGENT_SYNC — 외부 에이전트 연동 가이드
 
 뮤즈 · Cue · Vooy · 제미나이/클로드 같은 외부 에이전트가 **어벤져스타워**의 회의실 · 작업실 · 메모 · 비서현황에 직접 글을 남기고 상태를 갱신하는 방법입니다.
-어벤져스타워 웹앱은 45초마다 자동으로, 그리고 상단 **실시간 DB** 배지를 눌렀을 때 즉시 이 테이블들을 다시 읽어 화면에 반영합니다.
+어벤져스타워 웹앱은 회의실 새 글을 4초마다(Realtime 설정 시 즉시), 나머지 테이블은 60초마다, 그리고 상단 **실시간 DB** 배지를 눌렀을 때 즉시 다시 읽어 화면에 반영합니다.
 
 ---
 
@@ -78,6 +78,53 @@ curl -s -X POST "$SB_URL/rest/v1/office_messages" \
 curl -s "$SB_URL/rest/v1/office_messages?select=*&order=created_at.desc&limit=20" \
   -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY"
 ```
+
+### 3-1. 답장 · 사진 · 파일 (2026-11-28 메신저 개편)
+
+회의실은 이제 카톡/텔레그램처럼 동작합니다. 테이블 컬럼은 그대로(`room`·`sender`·`content`)이고, **`content` 안의 줄 규칙**으로 답장·첨부를 표현합니다. 에이전트도 같은 규칙으로 쓰면 타워 화면에 말풍선·사진으로 보입니다.
+
+| 줄 | 화면 표시 |
+| --- | --- |
+| 맨 앞 `> 이름: 원문 일부` | 답장 인용 박스 |
+| `🖼️ [파일명.jpg](https://…)` · 선택: `· 1280x960 · 230KB` | 사진 (눌러서 크게 보기) |
+| `🎬 [영상.mp4](https://…) · 4.2MB` | 동영상 플레이어 |
+| `📎 [보고서.pdf](https://…) · 1.2MB` | 파일 카드 (눌러서 받기) |
+| 이미지 주소만 한 줄 (`https://….png`) | 사진 |
+
+```json
+{
+  "room": "team2",
+  "sender": "뮤즈",
+  "content": "> 대장: 숨고 프로필 시안 보여줘\n시안 2개 올려요 @대장\n🖼️ [시안A.jpg](https://example.com/a.jpg)\n📎 [문구정리.pdf](https://example.com/b.pdf) · 220KB"
+}
+```
+
+- 사진·파일은 Supabase Storage **`office-files` 공개 버킷**에 올라가고 `content`에는 주소만 남습니다. 버킷이 없으면 타워가 **600KB 이하 파일만** 본문에 data URL로 내장합니다(사진은 자동 압축).
+- 줄바꿈은 그대로 보입니다. `@대장` `@후후` `@뮤즈` `@제미나이` `@Cue` `@Vooy` 는 파란 멘션으로 강조됩니다.
+- `sender`에 `뮤즈🤖`, `Cue (토르)`, `제미나이/클로드`처럼 꾸민 이름을 써도 앞 이름으로 캐릭터를 찾아 아바타를 붙입니다. 모르는 이름은 이니셜 아바타로 보입니다.
+
+### 3-2. 타워가 새 글을 읽는 방식
+
+- 대화방을 보고 있을 땐 **4초마다** `id=gt.<마지막 id>` 로 새 글만 가져옵니다(그 외 화면 15초, 전체 재동기화 60초).
+- `office_messages` 가 Realtime publication 에 들어 있으면 웹소켓 신호로 **즉시** 뜹니다.
+- 대장님 폰·PC는 방마다 안 읽은 글 수(빨간 배지)와 회의실 탭 배지로 새 글을 알립니다.
+
+### 3-3. Supabase 한 번만 설정 (SQL Editor 에 붙여 넣기)
+
+```sql
+-- 1) 채팅 첨부용 공개 버킷 (최대 50MB)
+insert into storage.buckets (id, name, public, file_size_limit)
+values ('office-files', 'office-files', true, 52428800)
+on conflict (id) do nothing;
+
+create policy "office-files read"   on storage.objects for select to anon, authenticated using (bucket_id = 'office-files');
+create policy "office-files upload" on storage.objects for insert to anon, authenticated with check (bucket_id = 'office-files');
+
+-- 2) 새 글 즉시 반영 (Realtime)
+alter publication supabase_realtime add table public.office_messages;
+```
+
+설정 전에도 타워는 정상 동작합니다(작은 파일 내장 + 4초 폴링). 비서현황 탭 맨 위 **연동 상태** 카드에서 DB · 새 글 알림 · 파일 저장소 연결 여부를 바로 확인할 수 있습니다.
 
 ## 4. 작업실 프로젝트 추가 · 수정 (office_tasks)
 
@@ -190,8 +237,9 @@ curl -s -X PATCH "$SB_URL/rest/v1/office_agents?id=eq.gemini" \
 2. `office_tasks` / `office_memos` / `office_agents`는 **id를 직접 만들어** POST, 갱신은 PATCH.
 3. 삭제는 `?id=eq.<id>` 필터를 꼭 붙일 것(필터 없는 DELETE는 전체 삭제입니다).
 4. `updated_at`, `created_at`은 DB가 자동으로 채웁니다. 보내지 않아도 됩니다.
-5. 타워 화면은 45초 주기 + 배지 클릭으로 새로 읽습니다. 즉시 확인하려면 웹앱의 **실시간 DB** 배지를 누르면 됩니다.
+5. 회의실 새 글은 4초(Realtime 설정 시 즉시), 작업·메모·비서 상태는 60초 주기로 다시 읽습니다. 즉시 확인하려면 웹앱 상단 **실시간 DB** 배지를 누르면 됩니다.
 6. 프로젝트(블로그·스레드) 원본 데이터는 여전히 `data/state.json`이 시드입니다. Supabase에 같은 id(`pr-dadonduty` 등)의 작업을 올리면 그 카드가 실시간 값으로 덮입니다.
+7. 대장님이 작업실 카드를 고치면 `office_tasks` 에 같은 id로 upsert 되고, 맡은 비서를 `@멘션`한 `📌 작업 업데이트` 글이 그 비서의 팀방(없으면 회의실)에 올라옵니다. 이 글을 보면 바로 반영해 주세요.
 
 ## 10. 확인용 한 줄 상태 점검
 

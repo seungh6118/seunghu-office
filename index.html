@@ -3,18 +3,27 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
-  <meta name="theme-color" content="#EEF5FE" />
+  <meta name="theme-color" content="#f7fbff" />
   <meta name="color-scheme" content="light" />
-  <meta name="description" content="대장 전용 어벤져스타워 — 오피스 맵, 회의실, 성과실, 제작실, 작업실, 비서현황, 메모 (Supabase 실시간 동기화)" />
+  <meta name="description" content="대장 전용 어벤져스타워 — 오피스 맵, 회의실 메신저, 성과실, 제작실, 작업실, 비서현황, 메모 (Supabase 실시간 동기화)" />
   <title>어벤져스타워</title>
-  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+
+  <!-- PWA · iPhone '홈 화면에 추가' 시 주소창 없는 풀스크린 앱 -->
+  <link rel="manifest" href="manifest.json?v=20261128-ux2" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="어벤져스타워" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <link rel="stylesheet" href="styles.css?v=20261128-chatfix" />
+  <meta name="format-detection" content="telephone=no" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="assets/icon-192.png" type="image/png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <link rel="stylesheet" href="styles.css?v=20261128-ux2" />
 </head>
 <body>
-  <div class="app-shell" id="app-shell">
   <header class="app-header">
     <div class="header-inner">
       <div class="brand">
@@ -26,13 +35,13 @@
         </span>
         <div class="brand-text">
           <h1>어벤져스타워</h1>
-          <p class="brand-sub"><span class="brand-sub-full">대장 전용 · AVENGERS TOWER</span><span class="brand-sub-short">대장 전용 · AVENGERS</span></p>
+          <p class="brand-sub">대장 전용 · AVENGERS TOWER</p>
         </div>
       </div>
       <button class="sync-badge" id="sync-btn" type="button" title="state.json + Supabase 실시간 DB 새로 불러오기">
         <span class="sync-dot" aria-hidden="true"></span>
         <span class="sync-copy">
-          <span class="sync-label">실시간 DB</span>
+          <span class="sync-label">연결 중</span>
           <span class="sync-time" id="sync-time">불러오는 중…</span>
         </span>
       </button>
@@ -42,49 +51,43 @@
   <nav class="tabbar" id="tabbar" role="tablist" aria-label="주요 화면">
     <button class="tab is-active" type="button" role="tab" data-tab="map" aria-controls="view-map" aria-selected="true">
       <span class="tab-ico" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 3 3 7.4l9 4.4 9-4.4L12 3Z" />
-          <path d="m3 12.2 9 4.4 9-4.4" />
-          <path d="m3 16.9 9 4.4 9-4.4" />
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3 3 7.4l9 4.4 9-4.4L12 3Z" /><path d="m3 12.2 9 4.4 9-4.4" /><path d="m3 16.9 9 4.4 9-4.4" />
         </svg>
-      </span><span class="tab-lbl">오피스 맵</span>
+      </span><span class="tab-lbl">오피스</span>
     </button>
     <button class="tab" type="button" role="tab" data-tab="chat" aria-controls="view-chat" aria-selected="false">
       <span class="tab-ico" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M20.5 11.6c0 4.1-3.8 7.4-8.5 7.4a9.7 9.7 0 0 1-2.7-.4L4.5 20l1.3-3.5a7 7 0 0 1-2.3-5c0-4.1 3.8-7.4 8.5-7.4s8.5 3.3 8.5 7.5Z" />
-          <path d="M8.6 11.6h.01M12 11.6h.01M15.4 11.6h.01" />
         </svg>
+        <span class="tab-badge" id="tab-badge-chat" hidden></span>
       </span><span class="tab-lbl">회의실</span>
     </button>
     <button class="tab" type="button" role="tab" data-tab="work" aria-controls="view-work" aria-selected="false">
       <span class="tab-ico" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="4.5" y="4" width="15" height="17" rx="3" />
-          <path d="M9 4V3.4c0-.8.6-1.4 1.4-1.4h3.2c.8 0 1.4.6 1.4 1.4V4" />
-          <path d="M8.8 10.4h6.4M8.8 14.2h4.2" />
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4.5" y="4" width="15" height="17" rx="3" /><path d="M9 4V3.4c0-.8.6-1.4 1.4-1.4h3.2c.8 0 1.4.6 1.4 1.4V4" /><path d="m8.8 12.4 2.2 2.2 4.2-4.4" />
         </svg>
       </span><span class="tab-lbl">작업실</span>
     </button>
     <button class="tab" type="button" role="tab" data-tab="status" aria-controls="view-status" aria-selected="false">
       <span class="tab-ico" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 12.4h3.6l2.4-6.2 4.4 12 2.2-5.8H21" />
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="8" r="3.4" /><path d="M2.8 19.6c.7-3.4 3.2-5.4 6.2-5.4s5.5 2 6.2 5.4" /><path d="M16 4.9a3.4 3.4 0 0 1 0 6.3M18.2 14.6c1.6.8 2.7 2.4 3 5" />
         </svg>
       </span><span class="tab-lbl">비서현황</span>
     </button>
     <button class="tab" type="button" role="tab" data-tab="memo" aria-controls="view-memo" aria-selected="false">
       <span class="tab-ico" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M6.5 2.8h7.6L19 7.7v12.4a1.1 1.1 0 0 1-1.1 1.1H6.5a1.1 1.1 0 0 1-1.1-1.1V3.9a1.1 1.1 0 0 1 1.1-1.1Z" />
-          <path d="M14 3.2v4.9h5" />
-          <path d="M8.6 13h6.8M8.6 16.6h4.4" />
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6.5 2.8h7.6L19 7.7v12.4a1.1 1.1 0 0 1-1.1 1.1H6.5a1.1 1.1 0 0 1-1.1-1.1V3.9a1.1 1.1 0 0 1 1.1-1.1Z" /><path d="M14 3.2v4.9h5" /><path d="M8.6 13h6.8M8.6 16.6h4.4" />
         </svg>
       </span><span class="tab-lbl">메모</span>
     </button>
   </nav>
 
-  <main class="app-main">
+  <main class="app-main" id="app-main">
     <div class="load-error" id="load-error" hidden>
       <strong>데이터를 불러오지 못했어요</strong>
       <p><code>data/state.json</code>을 읽을 수 없습니다. 로컬 파일을 더블클릭해 열었다면 <code>python3 -m http.server</code> 같은 웹 서버로 열거나, GitHub Pages 주소로 접속해 주세요.</p>
@@ -114,187 +117,173 @@
           <div class="map-layer" id="room-labels"></div>
           <div class="map-layer" id="characters"></div>
         </div>
-        <p class="map-hint">회의실·라운지는 그 방으로 이동 · 성과실·제작실은 현황판이 열려요 · 비서를 누르면 지금 하는 일이 보여요</p>
+        <p class="map-hint">방 이름을 누르면 그 방으로 · 비서를 누르면 지금 하는 일이 보여요</p>
       </div>
 
       <div class="detail-sheet" id="map-detail" hidden></div>
 
-      <div class="map-empty" id="map-empty">
-        <span class="me-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9A1.5 1.5 0 0 1 18.5 16H9l-5 4V5.5Z" />
-            <path d="M8.5 8.5h7M8.5 12h4.5" />
-          </svg>
-        </span>
-        <span>
-          <b>방이나 비서를 눌러 보세요</b>
-          지금 하는 일, 다음 할 일, 최근 활동이 이 자리에 펼쳐집니다.
-        </span>
-      </div>
+      <section class="recent-card" id="recent-card" aria-label="최근 대화">
+        <header class="card-head">
+          <h3>최근 대화</h3>
+          <button class="text-btn" type="button" data-goto-tab="chat">회의실 열기 →</button>
+        </header>
+        <ul class="recent-list" id="recent-list"></ul>
+      </section>
     </section>
 
-    <!-- 회의실 — 플렉스 셸(상단 고정 · 가운데만 스크롤 · 입력창 하단 고정) -->
+    <!-- 회의실 = 메신저 (방 목록 → 대화방) -->
     <section class="view chat-view" id="view-chat" data-view="chat" role="tabpanel" aria-labelledby="chat-title" hidden>
-      <div class="chat-top">
-        <div class="view-head">
-          <h2 id="chat-title">회의실</h2>
-          <p>비서들이 모여 오늘 할 일을 맞추는 방이에요.</p>
-        </div>
-        <div class="chip-row" id="chat-rooms" aria-label="회의실 방 필터"></div>
-      </div>
-
-      <div class="chat-list-wrap">
-        <ul class="msg-list" id="msg-list" aria-live="polite"></ul>
-        <!-- 위로 올려 옛 글을 볼 때만 뜨는 ↓ 최신 버튼 (말풍선 영역 기준, 입력창과 겹치지 않음) -->
-        <button class="chat-latest" id="chat-latest" type="button" hidden>
-          <span class="cl-ico" aria-hidden="true">↓</span><span class="cl-txt">최신</span><span class="cl-count" id="chat-latest-count" hidden></span>
-        </button>
-      </div>
-
-      <form class="composer" id="chat-form" autocomplete="off">
-        <div class="composer-panel" id="composer-panel" inert>
-          <div class="composer-strip">
-            <span class="composer-label">보내는 사람</span>
-            <div class="sender-chips" id="sender-chips" aria-label="보내는 사람 선택"></div>
-            <span class="composer-sep" aria-hidden="true"></span>
-            <span class="composer-label" aria-hidden="true">@멘션</span>
-            <div class="mention-chips" id="mention-chips" aria-label="멘션 추가"></div>
+      <div class="chat-layout">
+        <aside class="room-pane">
+          <div class="view-head">
+            <div>
+              <h2 id="chat-title">회의실</h2>
+              <p>비서들과 바로 대화하는 메신저예요.</p>
+            </div>
+            <span class="live-pill" id="live-pill">연결 중</span>
           </div>
-        </div>
-        <div class="composer-bar">
-          <button class="sender-toggle" id="sender-toggle" type="button" aria-expanded="false" aria-controls="composer-panel" title="보내는 사람 바꾸기">
-            <span class="st-emoji" id="sender-toggle-emoji" aria-hidden="true">👑</span>
-            <span class="st-name" id="sender-toggle-name">대장</span>
-            <span class="st-caret" aria-hidden="true">▾</span>
-          </button>
-          <textarea id="chat-input" rows="1" placeholder="할 말을 적어 주세요" aria-label="메시지" enterkeyhint="send"></textarea>
-          <button class="send-btn" type="submit">전송</button>
-          <select id="chat-sender" class="visually-hidden" tabindex="-1" aria-hidden="true"></select>
-        </div>
-        <p class="composer-hint" id="chat-hint">브라우저에 저장됩니다.</p>
-      </form>
+          <ul class="room-list" id="room-list" aria-label="대화방 목록"></ul>
+          <p class="room-pane-foot" id="room-pane-foot"></p>
+        </aside>
+
+        <section class="chat-room" id="chat-room" aria-label="대화방">
+          <header class="cr-head">
+            <button class="cr-icon-btn cr-back" id="cr-back" type="button" aria-label="방 목록으로">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7" /></svg>
+            </button>
+            <div class="cr-title">
+              <span class="cr-emoji" id="cr-emoji" aria-hidden="true">🏛️</span>
+              <div class="cr-title-text">
+                <h3 id="cr-name">회의실</h3>
+                <p id="cr-sub">전원</p>
+              </div>
+            </div>
+            <button class="cr-icon-btn" id="cr-search-btn" type="button" aria-label="대화 검색" aria-expanded="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg>
+            </button>
+          </header>
+          <div class="cr-search" id="cr-search" hidden>
+            <input id="cr-search-input" type="search" placeholder="이 방에서 검색" aria-label="대화 검색어" enterkeyhint="search" />
+            <span class="cr-search-count" id="cr-search-count"></span>
+          </div>
+          <nav class="cr-rooms" id="cr-rooms" aria-label="방 빠른 전환"></nav>
+
+          <div class="cr-body" id="cr-body">
+            <ol class="msg-list" id="msg-list" aria-live="polite"></ol>
+            <button class="chat-latest" id="chat-latest" type="button" hidden>
+              <span class="cl-ico" aria-hidden="true">↓</span><span class="cl-txt" id="chat-latest-txt">최신</span>
+            </button>
+            <div class="drop-hint" id="drop-hint" hidden><span>여기에 놓으면 첨부돼요</span></div>
+          </div>
+
+          <form class="composer" id="chat-form" autocomplete="off">
+            <div class="cmp-pop" id="mention-pop" role="listbox" aria-label="멘션 추천" hidden></div>
+            <div class="cmp-bar cmp-reply" id="cmp-reply" hidden></div>
+            <div class="cmp-bar cmp-as" id="cmp-as" hidden></div>
+            <div class="cmp-tray" id="cmp-tray" hidden></div>
+            <div class="cmp-row">
+              <button class="cmp-plus" id="cmp-plus" type="button" aria-label="첨부·더보기" aria-expanded="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
+              </button>
+              <div class="cmp-field">
+                <textarea id="chat-input" rows="1" placeholder="메시지 입력" aria-label="메시지" enterkeyhint="enter"></textarea>
+                <button class="cmp-who" id="cmp-who" type="button" aria-label="보내는 사람 바꾸기"></button>
+              </div>
+              <button class="cmp-send" id="cmp-send" type="submit" aria-label="보내기" disabled>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5.5 11.5 12 5l6.5 6.5" /></svg>
+              </button>
+            </div>
+            <div class="cmp-menu" id="cmp-menu" hidden>
+              <button type="button" data-cmp="media"><span class="cm-ico cm-blue">🖼️</span><span>사진·동영상</span></button>
+              <button type="button" data-cmp="file"><span class="cm-ico cm-amber">📁</span><span>파일</span></button>
+              <button type="button" data-cmp="mention"><span class="cm-ico cm-violet">@</span><span>멘션</span></button>
+              <button type="button" data-cmp="sender"><span class="cm-ico cm-teal">👤</span><span>보내는 사람</span></button>
+            </div>
+            <input type="file" id="file-media" accept="image/*,video/*" multiple hidden />
+            <input type="file" id="file-any" multiple hidden />
+          </form>
+        </section>
+      </div>
     </section>
 
     <!-- 작업실 -->
     <section class="view" id="view-work" data-view="work" role="tabpanel" aria-labelledby="work-title" hidden>
       <div class="view-head">
-        <h2 id="work-title">작업실</h2>
-        <p>지금 굴러가는 프로젝트와 다음 할 일.</p>
+        <div>
+          <h2 id="work-title">작업실</h2>
+          <p>카드를 누르면 상태·진행률을 바로 바꿀 수 있어요.</p>
+        </div>
+        <button class="primary-btn is-sm" id="task-new" type="button">+ 새 작업</button>
       </div>
-
+      <div class="seg" id="task-filter" role="tablist" aria-label="작업 상태 필터"></div>
       <div class="card-grid" id="project-list"></div>
-
-      <form class="add-panel" id="task-form">
-        <h3>새 작업 지시</h3>
-        <div class="field-row">
-          <label class="field field-emoji">
-            <span>아이콘</span>
-            <select id="task-emoji">
-              <option value="📌">📌</option>
-              <option value="🧵">🧵</option>
-              <option value="📝">📝</option>
-              <option value="🎁">🎁</option>
-              <option value="🎥">🎥</option>
-              <option value="🏠">🏠</option>
-              <option value="🛠️">🛠️</option>
-              <option value="💡">💡</option>
-            </select>
-          </label>
-          <label class="field">
-            <span>작업 이름</span>
-            <input id="task-title" type="text" maxlength="60" placeholder="예: 이번 주 스레드 소재 5개 뽑기" required />
-          </label>
-        </div>
-        <label class="field">
-          <span>다음 할 일 <em>(선택)</em></span>
-          <input id="task-next" type="text" maxlength="120" placeholder="예: 목요일 저녁 9시 전까지 초안" />
-        </label>
-        <div class="field-row">
-          <label class="field">
-            <span>상태</span>
-            <select id="task-status">
-              <option>진행중</option>
-              <option>대기</option>
-              <option>완료</option>
-            </select>
-          </label>
-          <label class="field">
-            <span>맡는 비서</span>
-            <select id="task-owner">
-              <option>후후</option>
-              <option>뮤즈</option>
-              <option>제미나이</option>
-              <option>Cue</option>
-              <option>Vooy</option>
-              <option>내가 직접</option>
-            </select>
-          </label>
-        </div>
-        <button class="primary-btn" type="submit">작업실에 추가</button>
-        <p class="form-hint">추가한 작업은 이 브라우저에 저장돼요.</p>
-      </form>
     </section>
 
     <!-- 비서현황 -->
     <section class="view" id="view-status" data-view="status" role="tabpanel" aria-labelledby="status-title" hidden>
       <div class="view-head">
-        <h2 id="status-title">비서현황</h2>
-        <p>누가 무엇을 들고 있는지 한눈에.</p>
+        <div>
+          <h2 id="status-title">비서현황</h2>
+          <p>누가 무엇을 들고 있는지, 연동은 살아 있는지 한눈에.</p>
+        </div>
       </div>
 
-      <div class="agent-grid" id="agent-cards"></div>
+      <section class="link-panel" id="link-panel" aria-label="연동 상태"></section>
 
-      <h3 class="sub-head">스케줄 액션 타임라인</h3>
+      <div id="agent-cards"></div>
+
+      <h3 class="sub-head">스케줄 타임라인</h3>
       <ol class="timeline" id="schedule-list"></ol>
-
-      <h3 class="sub-head">외부 에이전트 연동</h3>
-      <section class="sync-panel">
-        <h3>Supabase 실시간 DB</h3>
-        <p>뮤즈·Cue·Vooy·제미나이/클로드가 같은 테이블에 글과 작업 상태를 남기면 이 화면에 바로 뜹니다. 45초마다 자동 동기화되고, 위 동기화 배지를 누르면 즉시 새로고칩니다.</p>
-        <div class="sync-tables">
-          <span class="sync-table">office_messages</span>
-          <span class="sync-table">office_tasks</span>
-          <span class="sync-table">office_memos</span>
-          <span class="sync-table">office_agents</span>
-        </div>
-        <div class="sync-links">
-          <a class="sync-link" href="https://github.com/seungh6118/seunghu-office/blob/main/AGENT_SYNC.md" target="_blank" rel="noopener">연동 가이드 (AGENT_SYNC.md)</a>
-        </div>
-      </section>
     </section>
 
     <!-- 메모 -->
     <section class="view" id="view-memo" data-view="memo" role="tabpanel" aria-labelledby="memo-title" hidden>
       <div class="view-head">
-        <h2 id="memo-title">메모</h2>
-        <p>핀 고정해 두면 위에 남아요.</p>
+        <div>
+          <h2 id="memo-title">메모</h2>
+          <p>핀 고정한 메모는 위에 남아요. 누르면 고칠 수 있어요.</p>
+        </div>
       </div>
 
       <form class="memo-form" id="memo-form">
-        <textarea id="memo-input" rows="2" maxlength="300" placeholder="빠른 메모…" aria-label="메모 내용"></textarea>
-        <button class="primary-btn" type="submit">메모 추가</button>
+        <textarea id="memo-input" rows="2" maxlength="1000" placeholder="빠른 메모…" aria-label="메모 내용"></textarea>
+        <div class="memo-form-foot">
+          <input class="memo-search" id="memo-search" type="search" placeholder="메모 검색" aria-label="메모 검색" />
+          <button class="primary-btn is-sm" type="submit">메모 추가</button>
+        </div>
       </form>
 
       <ul class="memo-list" id="memo-list"></ul>
     </section>
   </main>
-  </div><!-- /.app-shell -->
 
-  <!-- 성과실 · 제작실 전용 바텀시트 -->
-  <div class="zone-backdrop" id="zone-backdrop" hidden></div>
-  <section class="zone-sheet" id="zone-sheet" role="dialog" aria-modal="true" aria-labelledby="zone-title" hidden>
-    <div class="zone-grip" aria-hidden="true"></div>
-    <header class="zone-head">
-      <span class="zone-emoji" id="zone-emoji" aria-hidden="true">📊</span>
-      <div class="zone-id">
-        <h2 id="zone-title">성과실</h2>
-        <p id="zone-sub">채널별 최신 성과</p>
+  <!-- 공용 바텀시트 (성과실 · 제작실 · 작업 편집 · 메시지 메뉴 등) -->
+  <div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
+  <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden>
+    <div class="sheet-grip" aria-hidden="true"></div>
+    <header class="sheet-head" id="sheet-head">
+      <span class="sheet-emoji" id="sheet-emoji" aria-hidden="true"></span>
+      <div class="sheet-id">
+        <h2 id="sheet-title"></h2>
+        <p id="sheet-sub"></p>
       </div>
-      <button class="zone-close" id="zone-close" type="button" aria-label="닫기">✕</button>
+      <button class="sheet-close" id="sheet-close" type="button" aria-label="닫기">✕</button>
     </header>
-    <div class="zone-body" id="zone-body"></div>
+    <div class="sheet-body" id="sheet-body"></div>
   </section>
 
-  <script src="app.js?v=20261128-chatfix"></script>
+  <!-- 사진 크게 보기 -->
+  <div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="사진 보기" hidden>
+    <div class="viewer-top">
+      <span class="viewer-name" id="viewer-name"></span>
+      <a class="viewer-btn" id="viewer-save" href="#" download target="_blank" rel="noopener">저장</a>
+      <button class="viewer-btn" id="viewer-close" type="button" aria-label="닫기">✕</button>
+    </div>
+    <img class="viewer-img" id="viewer-img" alt="" />
+  </div>
+
+  <div class="toast-wrap" id="toast-wrap" aria-live="polite"></div>
+
+  <script src="app.js?v=20261128-ux2"></script>
 </body>
 </html>

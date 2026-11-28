@@ -1,0 +1,26 @@
+{
+  "name": "어벤져스타워",
+  "short_name": "어벤져스타워",
+  "description": "대장 전용 어벤져스타워 — 오피스 맵 · 회의실 메신저 · 작업실 · 비서현황 · 메모",
+  "id": "./",
+  "start_url": "./?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#f2f6fc",
+  "theme_color": "#f7fbff",
+  "lang": "ko",
+  "dir": "ltr",
+  "categories": ["productivity", "business"],
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "회의실", "short_name": "회의실", "url": "./#chat", "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }] },
+    { "name": "작업실", "short_name": "작업실", "url": "./#work", "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

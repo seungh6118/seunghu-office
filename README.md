@@ -3,7 +3,9 @@
 대장 전용 **어벤져스타워** 대시보드. 대장님의 스레드·블로그·체험단·생활 행정 진행 상황과 비서진(후후·뮤즈·제미나이·Cue·Vooy) 현황을 한 화면에서 보는 정적 웹앱입니다.
 
 - **밝은 히어로 본부** — 화이트·실버·아이스 블루(`#F0F6FF`~`#FFFFFF`) 기반 글래스 카드, 스타크 블루 `#0284C7` / 시안 `#06B6D4` / 히어로 골드 `#D97706` / 포인트 레드 `#DC2626`.
-- **실시간 DB** — 회의실·작업실·메모·비서현황은 Supabase(`office_messages` · `office_tasks` · `office_memos` · `office_agents`)와 45초 주기로 동기화됩니다. 폰·PC·외부 에이전트가 같은 방을 봅니다. 외부 에이전트용 curl 예시는 [`AGENT_SYNC.md`](./AGENT_SYNC.md).
+- **실시간 DB** — 회의실·작업실·메모·비서현황은 Supabase(`office_messages` · `office_tasks` · `office_memos` · `office_agents`)와 동기화됩니다. 회의실 새 글은 4초(Realtime 설정 시 즉시), 나머지는 60초 주기. 폰·PC·외부 에이전트가 같은 방을 봅니다. 외부 에이전트용 curl 예시는 [`AGENT_SYNC.md`](./AGENT_SYNC.md).
+- **메신저형 회의실** — 카톡/텔레그램처럼 방 목록 → 대화방. 사진·동영상·파일 첨부, 답장, @멘션 자동완성, 안 읽은 글 배지, 오프라인 보관 후 자동 전송.
+- **홈 화면 앱(PWA)** — iPhone Safari 공유 → **홈 화면에 추가** 하면 주소창 없는 풀스크린 앱으로 열립니다(`manifest.json`, `apple-mobile-web-app-capable`, `assets/apple-touch-icon.png`).
 - **빌드 도구 없음** — `index.html` + `styles.css` + `app.js` + `data/state.json` 만으로 동작합니다.
 - **모바일 퍼스트** — 폰에서는 하단 5탭 글래스 바 + 풀블리드 오피스 맵, 900px 이상에서는 상단 플로팅 탭, 1080px 이상에서는 오피스 맵 + 현황 사이드 패널 2단 구성.
 - **캐릭터** — 이모지 핀 대신 6명의 커스텀 SVG 캐릭터(의자·소파에 착석)로 그립니다. 후후=캡틴 아메리카, 뮤즈=아이언맨, Cue=토르, 제미나이=닥터 스트레인지, Vooy=헐크, 대장=왕관+케이프. 모바일 40px, 데스크톱 70px 이상이며 터치 영역은 그보다 넓습니다.
@@ -13,16 +15,19 @@
 
 ```
 projects/seunghu-office/
-├── index.html              화면 골격 (SVG 탭 아이콘 · 5개 탭)
-├── styles.css              HERO HQ 라이트 테마, 반응형
-├── app.js                  렌더링 · Supabase REST · localStorage 폴백
+├── index.html              화면 골격 (SVG 탭 아이콘 · 5개 탭 · 공용 바텀시트 · 사진 뷰어)
+├── manifest.json           PWA (홈 화면 앱: standalone, 아이콘)
+├── styles.css              HERO HQ 라이트 테마, 반응형, 메신저 UI
+├── app.js                  렌더링 · Supabase REST/Realtime/Storage · localStorage 폴백
 ├── AGENT_SYNC.md           ★ 외부 에이전트(뮤즈·Cue·Vooy·제미나이) 연동 가이드
 ├── data/
 │   └── state.json          기본 시드 데이터 (지도 좌표·요약·스케줄)
 ├── assets/
 │   ├── office-map-bg.png   히어로 본부 3D 오피스 배경 (1402×1122)
 │   ├── office-map-bg.webp  같은 배경의 경량 버전 (모바일 우선 로딩)
-│   └── favicon.svg         블루 + 골드 크라운 아이콘
+│   ├── favicon.svg         블루 + 골드 크라운 아이콘
+│   ├── icon-192.png · icon-512.png · icon-maskable-512.png   PWA 아이콘
+│   └── apple-touch-icon.png   iPhone 홈 화면 아이콘 (180×180)
 └── README.md
 ```
 
@@ -49,10 +54,13 @@ python3 -m http.server 8765
 | --- | --- |
 | Project URL | `https://qebbpadabmkeeecnzfrm.supabase.co` |
 | API Key (publishable, 공개용) | `sb_publishable_dgSAZviMpxNeJ0YYik4FZw_HIPQeRdg` |
-| 폴링 | 45초 + 동기화 배지 클릭 시 즉시 + 탭 복귀 시 |
+| 폴링 | 회의실 새 글 4초(id 증분) · 그 외 15초 · 전체 60초 + 배지 클릭·탭 복귀 시 즉시 |
+| Realtime | `office_messages` 가 publication 에 있으면 웹소켓 신호로 즉시 (설정 SQL은 AGENT_SYNC.md 3-3) |
+| Storage | 공개 버킷 `office-files` (없으면 600KB 이하만 본문 내장) |
 
 - `data/state.json` 은 **시드**입니다. 먼저 읽어 화면을 그리고, 곧바로 Supabase 4개 테이블을 읽어 합칩니다. 같은 id가 있으면 **Supabase 값이 우선**합니다.
-- 회의실 메시지는 `office_messages` 에 `POST` (id는 DB가 자동 생성), 45초마다 다시 읽어 다른 기기의 글이 바로 뜹니다.
+- 회의실 메시지는 `office_messages` 에 `POST` (id는 DB가 자동 생성). 최신 400개를 읽고 이후엔 `id=gt.<마지막 id>` 로 새 글만 가져옵니다(예전엔 오래된 300개만 읽어 새 글이 안 보이는 문제가 있었음).
+- 첨부·답장은 `content` 안의 줄 규칙(`> 인용`, `🖼️ [이름](URL)`, `📎 [이름](URL)`)으로 저장합니다 — 테이블 구조 변경 없음.
 - 작업실 추가/삭제, 메모 추가/핀/삭제, 비서 상태 갱신도 Supabase에 바로 씁니다. DB가 막히면 자동으로 localStorage에만 저장하고 상단 배지가 `로컬 저장`으로 바뀝니다.
 - `office_agents` 에 `id`를 캐릭터 id(`seunghu`/`huhu`/`muse`/`gemini`/`cue`/`vooy`)로 넣으면 오피스 맵 캐릭터 상태까지 갱신됩니다.
 
@@ -103,7 +111,10 @@ DB가 막힌 환경에서만 쓰이는 보조 저장소입니다.
 
 | 키 | 내용 |
 | --- | --- |
-| `seunghuOffice.chat.v1` | 오프라인에서 보낸 회의실 메시지 |
+| `seunghuOffice.chat.v1` | DB에 닿지 않아 보관 중인 회의실 메시지(`outbox`, 연결되면 자동 전송) |
+| `seunghuOffice.seen.v1` | 방별로 마지막으로 읽은 시각 (안 읽은 글 배지) |
+| `seunghuOffice.draft.v1` | 방별 작성 중인 글 |
+| `seunghuOffice.taskFilter.v1` | 작업실 상태 필터 |
 | `seunghuOffice.tasks.v1` | 오프라인에서 추가한 작업 |
 | `seunghuOffice.memos.v1` | 오프라인에서 추가한 메모 |
 | `seunghuOffice.pins.v1` | 시드 메모 핀 상태 |
@@ -121,13 +132,17 @@ DB가 막힌 환경에서만 쓰이는 보조 저장소입니다.
 ## 화면
 
 1. **오피스 맵** — 본부 요약 카드, 움직임 ON/OFF 토글, 4개 존(회의실·성과실·제작실·라운지) 배지, 히어로 본부 위 착석 캐릭터(눌러서 현재 작업 확인)
-2. **회의실** — 전체·회의실·🛡️ 1팀·⚡ 2팀·라운지 필터(지휘실 폐지), 보내는 사람·@멘션 한 줄 스트립, 메시지 전송 → Supabase 실시간 공유(LIVE 표시)
-   - 팀 구성: **1팀 = 후후(팀장) + Cue**, **2팀 = 뮤즈(팀장) + Vooy**. 팀방은 `room: "team1" / "team2"` 로 저장됩니다.
-   - 예전 `command`(지휘실) 로 남은 DB 로그는 `boardroom`(회의실)으로 매핑되어 그대로 보입니다.
-   - **레이아웃(2026-11-28 플렉스 개편)** — 회의실 탭이 열리면 `html/body.chat-mode` 로 페이지 스크롤을 잠그고, `header.tabbar/main` 을 감싼 `.app-shell` 을 `visualViewport` 크기(`--app-h`/`--vv-top`)에 맞춰 고정합니다. 셸은 `display:flex; flex-direction:column` 이고 상단(헤더·방칩)과 하단(`.composer` → `.tabbar`)은 `flex-shrink:0`, 가운데 `#msg-list` 만 `flex:1; min-height:0; overflow-y:auto` 로 스크롤합니다. 입력창은 `position: relative` 이며 `fixed` 를 쓰지 않습니다. iOS Safari 키보드가 올라오면 `body.keyboard-open` 으로 탭바를 숨기고, `visualViewport` 의 `resize/scroll` 마다 셸 높이·`offsetTop` 을 다시 맞춰(`window.scrollTo(0,0)` 로 Safari 가 밀어 올린 스크롤 차단) 입력창이 항상 키보드 바로 위에 붙습니다.
-   - **성과실·제작실** — 지도 라벨·상단 칩을 누르면 전용 바텀시트(`#zone-sheet`)가 열립니다(회의실 이동 아님).
-   - **진입·방 전환·방 필터·전송 직후에는 항상 최신 메시지(맨 아래)로 열립니다**(카톡식). `jumpChatToBottom` 이 `#msg-list.scrollTop` 을 바닥에 붙이고 rAF 2회 + 80/240/600ms + `document.fonts.ready` 로 모바일 레이아웃까지 보정합니다. `ResizeObserver` 가 입력창 펼침·키보드로 스크롤 영역 높이가 바뀌어도 바닥을 유지합니다.
-   - 사용자가 위로 올려 옛 글을 읽는 중에는 45초 폴링으로 화면을 끌어내리지 않고, `#msg-list` 우측 하단 `↓ 최신` 버튼(`#chat-latest`)에 새 글 개수만 표시합니다. 버튼은 스크롤 영역(`.chat-list-wrap`) 안에 `position:absolute` 로 들어가 입력창과 겹치지 않습니다.
-3. **작업실** — 진행 프로젝트 카드 + 새 작업 지시 추가(Supabase 저장)
-4. **비서현황** — 후후·뮤즈·제미나이·Cue·Vooy 상태 카드, 스케줄 타임라인, 외부 에이전트 연동 안내
-5. **메모** — 빠른 메모 추가·삭제·핀 고정(Supabase 저장)
+2. **회의실 (메신저)** — 카톡/텔레그램식. 방 목록(전체 · 🏛️ 회의실 · 🛡️ 1팀 · ⚡ 2팀 · ☕ 라운지)에 마지막 글 미리보기·시각·안 읽은 수가 뜨고, 누르면 대화방이 열립니다.
+   - 팀 구성: **1팀 = 후후(팀장) + Cue**, **2팀 = 뮤즈(팀장) + Vooy**. 팀방은 `room: "team1" / "team2"`, 예전 `command`(지휘실) 로그는 `boardroom` 으로 매핑.
+   - 말풍선: 같은 사람·5분 이내 글은 묶고(아바타·이름은 첫 글만), 시각은 분이 바뀔 때만, 날짜 구분선, 내 글은 오른쪽 파란 말풍선. 링크 자동 연결, @멘션 강조.
+   - 입력창: `+` → 사진·동영상 / 파일 / @멘션 / 보내는 사람. `@` 를 치면 멘션 자동완성. 모바일은 줄바꿈=Enter·전송=버튼(키보드 유지), PC는 Enter 전송·Shift+Enter 줄바꿈(한글 조합 중 Enter 무시). PC는 끌어다 놓기·붙여넣기로도 첨부.
+   - 말풍선 **길게 누르기**(PC는 우클릭·더블클릭) → 답장 · 복사 · (내 글) 삭제. 전송 실패는 말풍선 옆 `다시 보내기`.
+   - 방마다 작성 중인 글을 기억하고, 위로 올려 옛 글을 읽는 중엔 화면을 끌어내리지 않고 `새 메시지 N` 버튼만 띄웁니다.
+   - **레이아웃(모바일)** — 대화방(`#chat-room`)은 `position:fixed` 오버레이이고 `top/height` 를 `visualViewport.offsetTop/height`(`--vv-top`/`--vv-h`)에 맞춥니다. iOS Safari 키보드·폼 액세서리 바·하단 주소창이 생기거나 사라질 때마다(`visualViewport` resize/scroll) 다시 맞춰 입력창이 항상 키보드 바로 위에 붙습니다. 대화방이 열리면 바깥 페이지는 `html.is-locked`(body `position:fixed`)로 잠그고, 대화방 안에서는 말풍선 목록만 스크롤됩니다(`overscroll-behavior: contain` + 비스크롤 영역 `touchmove` 차단). 회의실 뷰에는 `transform`·`animation` 을 두지 않습니다 — 오버레이의 fixed 기준·쌓임 순서가 깨지기 때문.
+   - 짧은 대화는 `.msg-list::before { flex:1 }` 로 바닥에 붙고, 진입·방 전환·전송·이미지 로드·키보드 변화 때 `jumpChatToBottom` / `ResizeObserver` 가 최신 글(맨 아래)을 유지합니다.
+   - **PC(900px 이상)** — 왼쪽 방 목록 + 오른쪽 대화방 2단.
+   - 뒤로 가기: 대화방은 `#chat/<room>` 히스토리를 쌓아 iPhone 스와이프·안드로이드 뒤로 가기로 방 목록으로 돌아옵니다.
+   - **성과실·제작실** — 지도 라벨·상단 칩을 누르면 공용 바텀시트에 현황판이 열립니다(회의실 이동 아님).
+3. **작업실** — 전체/진행중/대기/완료 필터, 카드를 누르면 상태·진행률·담당·다음 할 일·링크를 바로 수정(Supabase upsert). 시드 카드도 같은 id로 덮어쓰고 `원래대로` 로 되돌릴 수 있음. `회의실에 알리기` 를 켜면 담당 비서를 @멘션한 업데이트 글이 팀방에 올라갑니다.
+4. **비서현황** — 연동 상태 카드(DB · 새 글 알림 · 파일 저장소 · 데이터 수), 팀별(1팀·2팀·자문) 비서 카드에 지금/다음 할 일 · 마지막 대화 · 최근 활동 시각 · `말 걸기` 버튼, 스케줄 타임라인
+5. **메모** — 빠른 메모 추가 · 검색 · 핀 고정 · 눌러서 고치기 · 삭제(두 번 눌러 확인), Supabase 저장
