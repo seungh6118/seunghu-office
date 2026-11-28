@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="어벤져스타워" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <link rel="stylesheet" href="styles.css?v=20261128-zoneclick" />
+  <link rel="stylesheet" href="styles.css?v=20261128-autoscroll" />
 </head>
 <body>
   <header class="app-header">
@@ -142,6 +142,10 @@
       <div class="chip-row" id="chat-rooms" aria-label="회의실 방 필터"></div>
       <ul class="msg-list" id="msg-list" aria-live="polite"></ul>
 
+      <button class="chat-latest" id="chat-latest" type="button" hidden>
+        <span class="cl-ico" aria-hidden="true">↓</span><span class="cl-txt">최신</span><span class="cl-count" id="chat-latest-count" hidden></span>
+      </button>
+
       <form class="composer" id="chat-form" autocomplete="off">
         <div class="composer-panel" id="composer-panel" inert>
           <div class="composer-row">
@@ -268,6 +272,6 @@
     </section>
   </main>
 
-  <script src="app.js?v=20261128-zoneclick"></script>
+  <script src="app.js?v=20261128-autoscroll"></script>
 </body>
 </html>

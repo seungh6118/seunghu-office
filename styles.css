@@ -842,6 +842,49 @@ picture { display: block; }
   padding: 28px 10px;
 }
 
+/* ↓ 최신 — 위로 올려 옛 글을 볼 때만 뜨는 플로팅 버튼 */
+.chat-latest {
+  position: fixed;
+  right: max(14px, calc((100vw - 820px) / 2 + 14px));
+  bottom: calc(var(--tabbar-h) + 74px + env(safe-area-inset-bottom));
+  z-index: 26;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 34px;
+  padding: 0 12px 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(2, 132, 199, .3);
+  background: rgba(255, 255, 255, .96);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+  color: var(--blue-ink);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: -.01em;
+  box-shadow: 0 12px 28px -16px rgba(13, 58, 110, .7), 0 1px 0 #fff inset;
+  cursor: pointer;
+  animation: chat-latest-in .18s ease both;
+}
+.chat-latest[hidden] { display: none; }
+.chat-latest .cl-ico { font-size: 13px; line-height: 1; }
+.chat-latest .cl-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #38bdf8, #0284c7);
+  color: #fff;
+  font-size: 9.5px;
+  font-weight: 900;
+}
+.chat-latest .cl-count[hidden] { display: none; }
+.chat-latest:active { transform: translateY(1px); }
+@keyframes chat-latest-in { from { opacity: 0; transform: translateY(7px) scale(.95); } }
+@media (min-width: 900px) { .chat-latest { bottom: 92px; } }
+
 /* 카톡형 슬림 컴포저 — 기본은 1줄 바, 터치하면 위로 펼쳐짐 */
 .composer {
   position: sticky;

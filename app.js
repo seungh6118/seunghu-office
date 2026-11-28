@@ -382,6 +382,7 @@ const el = {};
 ['sync-btn', 'sync-time', 'load-error', 'tabbar', 'hq-summary', 'hq-stats',
   'room-chips', 'map-stage', 'map-img', 'room-labels', 'characters', 'map-detail',
   'chat-rooms', 'msg-list', 'chat-form', 'chat-sender', 'mention-chips', 'chat-input', 'chat-hint',
+  'chat-latest', 'chat-latest-count',
   'sender-chips', 'sender-toggle', 'sender-toggle-emoji', 'sender-toggle-name', 'composer-panel',
   'project-list', 'task-form', 'task-emoji', 'task-title', 'task-next', 'task-status', 'task-owner',
   'agent-cards', 'schedule-list', 'memo-form', 'memo-input', 'memo-list'
@@ -678,6 +679,12 @@ function renderAll() {
   renderMemos();
   renderDetail();
   renderComposer();
+  /* DB 최초 로드·동기화 완료 — 회의실 탭이 열려 있으면 그때도 바닥(최신)으로 */
+  if (activeTab === 'chat' && !chatBootJumped) {
+    chatBootJumped = true;
+    jumpChatToBottom();
+  }
+  updateChatLatestBtn();
 }
 
 function renderMeta() {
@@ -931,6 +938,86 @@ function renderChatRooms() {
     </button>`).join('');
 }
 
+/* ---------------- 회의실 자동 스크롤 (카톡처럼 최신 메시지 = 맨 아래) --------------
+   · 회의실 탭 진입 · 지도/칩에서 방 이동 · 방 필터 변경 · 전송 직후 · 최초 DB 로드
+     → 레이아웃·폰트 반영을 몇 번 더 보정해 폰에서도 확실히 바닥에 붙인다.
+   · 사용자가 위로 올려 옛 글을 읽는 중에는 45초 폴링으로 화면을 끌어내리지 않고
+     우측 하단 ↓ 최신 버튼에만 새 글 개수를 표시한다. */
+const CHAT_BOTTOM_SLACK = 56;   /* 바닥에서 이만큼 안쪽이면 '바닥을 보고 있다'로 본다 */
+let chatPinnedBottom = true;    /* 사용자가 바닥에 붙어 있는지 */
+let chatTailSeen = null;        /* 마지막으로 그린 최신 메시지 식별자 */
+let chatNewCount = 0;           /* 안 보는 동안 들어온 새 글 수 */
+let chatJumpTimers = [];
+let chatBootJumped = false;     /* 첫 데이터 렌더에서 한 번은 무조건 바닥으로 */
+
+function chatScrollMax() {
+  const doc = document.documentElement;
+  return Math.max(0, doc.scrollHeight - window.innerHeight);
+}
+
+function chatIsAtBottom() {
+  return chatScrollMax() - window.scrollY <= CHAT_BOTTOM_SLACK;
+}
+
+function stopChatJump() {
+  chatJumpTimers.forEach((t) => clearTimeout(t));
+  chatJumpTimers = [];
+}
+
+function updateChatLatestBtn() {
+  if (!el.chatLatest) return;
+  el.chatLatest.hidden = !(activeTab === 'chat' && !chatPinnedBottom);
+  if (el.chatLatestCount) {
+    el.chatLatestCount.hidden = chatNewCount < 1;
+    el.chatLatestCount.textContent = chatNewCount > 9 ? '9+' : String(chatNewCount);
+  }
+}
+
+function applyChatJump() {
+  window.scrollTo(0, chatScrollMax());
+  chatPinnedBottom = true;
+  if (chatNewCount) chatNewCount = 0;
+  updateChatLatestBtn();
+}
+
+/* 사용자가 그새 위로 올라갔으면 보정 스크롤을 포기한다 */
+function chatJumpGuard() {
+  if (activeTab !== 'chat' || !chatPinnedBottom) return;
+  applyChatJump();
+}
+
+function jumpChatToBottom() {
+  if (activeTab !== 'chat' || !el.msgList) return;
+  stopChatJump();
+  applyChatJump();
+  /* 레이아웃 반영 뒤 두 프레임 더 + 느린 모바일 보정(폰트·줄바꿈·입력바 펼침) */
+  requestAnimationFrame(() => {
+    applyChatJump();
+    requestAnimationFrame(chatJumpGuard);
+  });
+  chatJumpTimers.push(
+    setTimeout(chatJumpGuard, 80),
+    setTimeout(chatJumpGuard, 240),
+    setTimeout(chatJumpGuard, 600)
+  );
+  if (document.fonts && document.fonts.ready && document.fonts.ready.then) {
+    document.fonts.ready.then(chatJumpGuard);
+  }
+}
+
+/* 창 스크롤이 바닥에서 떨어지면 ↓ 최신 버튼을 띄운다 */
+function onChatScroll() {
+  if (activeTab !== 'chat') return;
+  const atBottom = chatIsAtBottom();
+  if (atBottom === chatPinnedBottom) {
+    if (atBottom && chatNewCount) { chatNewCount = 0; updateChatLatestBtn(); }
+    return;
+  }
+  chatPinnedBottom = atBottom;
+  if (atBottom) chatNewCount = 0;
+  updateChatLatestBtn();
+}
+
 function renderChat() {
   const msgs = allMessages().filter((m) => activeRoom === 'all' || m.room === activeRoom);
   if (!msgs.length) {
@@ -957,7 +1044,18 @@ function renderChat() {
       </li>`;
     }).join('');
   }
+  const tail = msgs.length
+    ? `${msgs[msgs.length - 1].id}|${msgs[msgs.length - 1].at}`
+    : 'empty';
+  const isNewArrival = chatTailSeen !== null && tail !== chatTailSeen;
+  chatTailSeen = tail;
   updateChatHint();
+  /* 새 글이 들어왔을 때: 바닥을 보고 있었으면 따라 내려가고,
+     옛 글을 읽는 중이면 화면을 끌어내리지 않고 새 글 개수만 표시 */
+  if (isNewArrival && activeTab === 'chat') {
+    if (chatPinnedBottom) jumpChatToBottom();
+    else { chatNewCount += 1; updateChatLatestBtn(); }
+  }
 }
 
 function updateChatHint() {
@@ -1116,13 +1214,21 @@ function setTab(tab, opts) {
   });
   write(KEY.tab, tab);
   try { history.replaceState(null, '', `#${tab}`); } catch (e) { /* ignore */ }
-  if (!opts || opts.scroll !== false) window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (!opts || opts.scroll !== false) {
+    /* 회의실은 카톡처럼 열자마자 최신 메시지(맨 아래) — 다른 탭은 위에서부터 */
+    if (tab !== 'chat') window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
   if (tab === 'chat') {
     updateChatHint();
     /* 적어 둔 글은 펼친 상태로 되살림 */
     if (el.chatInput && el.chatInput.value.trim()) setComposerOpen(true);
+    /* 데이터가 이미 있으면 여기서 바로 붙이고, 첫 로드 전이면 renderAll이 한 번 더 붙인다 */
+    if (state) chatBootJumped = true;
+    jumpChatToBottom();
   } else {
     setComposerOpen(false);
+    chatNewCount = 0;
+    if (el.chatLatest) el.chatLatest.hidden = true;
   }
 }
 
@@ -1174,7 +1280,17 @@ el.chatRooms.addEventListener('click', (e) => {
   write(KEY.room, activeRoom);
   renderChatRooms();
   renderChat();
+  jumpChatToBottom();
 });
+
+window.addEventListener('scroll', onChatScroll, { passive: true });
+
+if (el.chatLatest) {
+  el.chatLatest.addEventListener('click', () => {
+    jumpChatToBottom();
+    updateChatLatestBtn();
+  });
+}
 
 if (el.senderToggle) {
   el.senderToggle.addEventListener('click', () => {
@@ -1259,8 +1375,8 @@ el.chatForm.addEventListener('submit', async (e) => {
   setComposerOpen(false);
   el.chatInput.blur();
   autoGrowComposer();
-  const last = el.msgList.lastElementChild;
-  if (last) last.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  /* 내 새 메시지가 바로 보이도록 맨 아래로 */
+  jumpChatToBottom();
 });
 
 /* work */
