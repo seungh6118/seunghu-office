@@ -19,7 +19,7 @@
   /* ---------------- 동선 그래프 (맵 픽셀 좌표 1402×1122) ---------------- */
   const NODES = {
     hub: [880, 610], deskF: [760, 535], boss: [857, 410], window: [1045, 445], perf: [1175, 525],
-    loungeJ: [1030, 610], armchair: [1078, 650], sofaL: [1005, 714], sofaR: [1278, 724], coffee: [1172, 668], sofaB: [1150, 802],
+    loungeJ: [1030, 610], armchair: [1062, 692], sofaL: [1092, 772], sofaR: [1264, 690], coffee: [1172, 668], sofaB: [1252, 776],
     confDoor: [620, 578], confN: [235, 505], confE: [395, 588], confS: [285, 702], confW: [112, 612], confM: [165, 706],
     shop: [560, 790], shopW: [480, 835], wpA: [800, 690], wpB: [690, 765]
   };
@@ -86,7 +86,7 @@
     coffee: { icon: '☕', label: '커피 타임', pose: 'idle' },
     chat: { icon: '💬', label: '수다 중', pose: 'talk' },
     window: { icon: '🌆', label: '창밖 구경', pose: 'idle' },
-    rest: { icon: '🛋️', label: '휴식 중', pose: 'sit' },
+    rest: { icon: '🛋️', label: '휴식 중', pose: 'idle' },
     sleep: { icon: '💤', label: '오프라인', pose: 'sleep' },
     quest: { icon: '📜', label: '지령 수행', pose: 'work' },
     summon: { icon: '🙋', label: '호출 응답', pose: 'talk' },
@@ -123,7 +123,7 @@
     },
     seunghu: { title: '지휘관', hero: '대장', spots: {}, weights: {}, stats: { focus: 9, idea: 9, speed: 9, stamina: 9 }, trait: '리더' }
   };
-  const SEATED = { armchair: 1, sofaL: 1, sofaR: 1, sofaB: 1, boss: 1 };
+  const SEATED = { boss: 1 };   /* 책상 뒤 의자만 앉은 자세(아래를 흐리게 가림) — 나머지는 전신이 보이게 서서 쉰다 */
   const MEET_SPOTS = ['confE', 'confN', 'confS', 'confW', 'confM'];
 
   /* ---------------- 대사집 (NPC) ----------------
@@ -423,7 +423,10 @@
      ========================================================= */
   function lastSignal(id) {
     let t = 0;
-    ((typeof sb !== 'undefined' && sb.agents) || []).forEach((r) => { if (r.id === id) t = Math.max(t, ts(r.updated_at)); });
+    ((typeof sb !== 'undefined' && sb.agents) || []).forEach((r) => {
+      const k = typeof agentKey === 'function' ? agentKey(r) : r.id;
+      if (k === id) t = Math.max(t, ts(r.updated_at));
+    });
     const list = typeof allMessages === 'function' ? allMessages() : [];
     for (let i = list.length - 1; i >= 0; i -= 1) {
       const m = list[i];
@@ -459,8 +462,8 @@
     const p = presence(id);
     const base = PRES[p.key].label;
     if (id === BOSS) return '접속 중';
-    if (p.at) return `${base} · ${fmtAgo(new Date(p.at).toISOString())} 활동`;
-    return `${base} · 상태 기준`;
+    if (p.at) return `${base} · 마지막 흔적 ${fmtAgo(new Date(p.at).toISOString())}`;
+    return `${base} · DB에 흔적 없음(기본 상태 기준)`;
   }
 
   function taskOf(id) {
@@ -530,7 +533,7 @@
     else if (pose === 'work') cl.add('is-work');
     else if (pose === 'talk') cl.add('is-talk');
     else if (pose === 'sit') cl.add('is-sit');
-    else if (pose === 'sleep') { cl.add('is-sit'); cl.add('is-sleep'); }
+    else if (pose === 'sleep') cl.add('is-sleep');
     else if (pose === 'cheer') cl.add('is-cheer');
     /* 앉아서 일하는 자세 */
     if (pose === 'sitwork') { cl.add('is-sit'); cl.add('is-work'); }
@@ -977,6 +980,36 @@
     renderCard();
   }
 
+  /* 직접 DB에 못 쓰는 에이전트(예: 채팅창에서만 쓰는 제미나이)를 대장이 대신 '접속 중'으로 표시 */
+  async function checkin(id) {
+    const c = charById(id);
+    if (typeof sb === 'undefined' || !sb.ok) { toast('DB에 연결돼야 접속 처리를 할 수 있어요', 'error'); return; }
+    const old = (sb.agents || []).find((r) => (typeof agentKey === 'function' ? agentKey(r) : r.id) === id);
+    const row = {
+      id: old ? old.id : id,
+      name: (old && old.name) || c.name,
+      role: (old && old.role) || c.role || '',
+      status: (old && old.status && !/오프|대기/.test(old.status)) ? old.status : '접속 중',
+      room: (old && old.room) || chatRoomFor(id),
+      current_task: (old && old.current_task) || taskOf(id) || '',
+      next_task: (old && old.next_task) || '',
+      updated_at: new Date().toISOString()
+    };
+    try {
+      const rows = await sbUpsert(SUPABASE.tables.agents, row);
+      const saved = Array.isArray(rows) && rows[0] ? rows[0] : row;
+      sb.agents = (sb.agents || []).filter((r) => String(r.id) !== String(saved.id));
+      sb.agents.unshift(Object.assign({}, saved, { updated_at: saved.updated_at || row.updated_at }));
+      Object.keys(presCache).forEach((k) => delete presCache[k]);
+      toast(`📡 ${c.name} 접속 처리 완료 — 30분 동안 🟢`);
+      logEvent('📡', `${c.name} 접속 처리 (대장 체크인)`, id);
+      refreshDockSoon();
+      renderCard();
+    } catch (err) {
+      toast(`접속 처리 실패 — ${err.message || '연결을 확인해 주세요'}`, 'error');
+    }
+  }
+
   /* 지령 — 비서가 일터로 가서 일하고 보상을 받는다. 회의실(DB)에도 전달 */
   const orders = {};
   function giveOrder(id, text, share) {
@@ -1378,7 +1411,8 @@
         <button type="button" data-act="coffee">☕ 커피 <small>15🪙</small></button>
         <button type="button" data-act="cake">🍰 케이크 <small>40🪙</small></button>
         <button type="button" data-act="order">📣 지령</button>
-      </div>`;
+      </div>
+      ${p.key !== 'online' ? `<button class="gc-checkin" type="button" data-act="checkin">📡 ${esc(c.name)} 접속 처리 <small>(DB에 대신 체크인)</small></button>` : ''}`;
   }
 
   function roomCardHtml(kind, rid) {
@@ -1704,7 +1738,10 @@
     });
   }
   function updateTint() {
-    if (E.tint) E.tint.style.background = tintFor(new Date().getHours());
+    const h = new Date().getHours();
+    if (E.tint) E.tint.style.background = tintFor(h);
+    /* 맵이 어두워지는 시간엔 캐릭터도 같은 톤으로 (붙여 놓은 듯 떠 보이지 않게) */
+    if (E.actors) E.actors.style.filter = h >= 22 || h < 5 ? 'brightness(.78) saturate(.92)' : h >= 19 || h < 7 ? 'brightness(.9)' : '';
   }
 
   function start() {
@@ -1785,6 +1822,7 @@
       if (k === 'praise' && id) praise(id);
       else if (k === 'coffee' && id) snack(id, 'coffee');
       else if (k === 'cake' && id) snack(id, 'cake');
+      else if (k === 'checkin' && id) checkin(id);
       else if (k === 'order') orderSheet(id);
       else if (k === 'meeting') callMeeting();
       else if (k === 'quests') questSheet();

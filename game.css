@@ -50,15 +50,18 @@
 .hero-art.is-cheer .h-body { animation: hJump .5s ease-out 3; }
 @keyframes hJump { 0%, 100% { transform: translateY(0) scale(1); } 15% { transform: translateY(0) scale(1.06, .92); } 45% { transform: translateY(-16%) scale(.96, 1.06); } }
 
-/* 앉기 — 하반신을 가리고 낮춘다 (소파·의자) */
-.hero-art.is-sit .h-body { clip-path: inset(0 0 30% 0); transform: translateY(26%); animation: hSitBreath 3.4s ease-in-out infinite; }
-@keyframes hSitBreath { 0%, 100% { transform: translateY(26%) scale(1); } 50% { transform: translateY(26%) scale(1.012, 1.02); } }
-.hero-art.is-sit .h-shadow { width: 70%; bottom: 20%; opacity: .5; }
+/* 앉기 — 책상 뒤 의자(대장)만. 아래를 잘라내지 않고 서서히 흐려 책상 뒤에 앉은 것처럼 */
+.hero-art.is-sit .h-body {
+  -webkit-mask-image: linear-gradient(to bottom, #000 62%, rgba(0, 0, 0, 0) 84%); mask-image: linear-gradient(to bottom, #000 62%, rgba(0, 0, 0, 0) 84%);
+  transform: translateY(10%); animation: hSitBreath 3.4s ease-in-out infinite;
+}
+@keyframes hSitBreath { 0%, 100% { transform: translateY(10%) scale(1); } 50% { transform: translateY(10%) scale(1.012, 1.02); } }
+.hero-art.is-sit .h-shadow { opacity: .35; }
 .hero-art.is-sit.is-work .h-holo { bottom: 30%; }
 
-/* 잠자기 — 고개를 떨구고 살짝 어둡게 */
+/* 잠자기 — 서서 꾸벅꾸벅: 고개를 떨구고 살짝 어둡게 */
 .hero-art.is-sleep .h-body { animation: hSleep 3.6s ease-in-out infinite; filter: brightness(.9) saturate(.85); }
-@keyframes hSleep { 0%, 100% { transform: translateY(26%) rotate(6deg); } 50% { transform: translateY(27%) rotate(8deg); } }
+@keyframes hSleep { 0%, 100% { transform: rotate(5deg) translateY(1%); } 50% { transform: rotate(7deg) translateY(2%); } }
 
 /* 아바타용 얼굴 */
 img.hero-art.is-bust { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; border-radius: inherit; pointer-events: none; -webkit-user-drag: none; }
@@ -404,3 +407,7 @@ body.g-card-open .g-dock, body.g-card-open .g-actions { display: none; }
   .g-clock { display: none; }
   .g-sync { margin-left: auto; }
 }
+
+.gc-checkin { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 40px; margin-top: 8px; border: 1px dashed #94a3b8; border-radius: 14px; background: #f8fafc; color: #334155; font-size: 12.5px; font-weight: 800; }
+.gc-checkin small { font-size: 11px; font-weight: 600; color: #8592a6; }
+.gc-checkin:active { background: #eef2f7; }

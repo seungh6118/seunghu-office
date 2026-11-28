@@ -430,6 +430,16 @@ function normSender(sender) {
   return SENDER_ALIAS[stripped] || SENDER_ALIAS[stripped.toLowerCase()] || null;
 }
 
+/* office_agents 행이 id 'Gemini' · name '제미나이/클로드' 처럼 달라도 같은 비서(gemini)로 묶는다 */
+function agentKey(row) {
+  if (!row) return null;
+  const byId = normSender(row.id);
+  if (byId) return byId;
+  const idStr = String(row.id == null ? '' : row.id).toLowerCase();
+  const hit = Object.keys(SENDER_ALIAS).find((k) => k.length > 2 && idStr.indexOf(k.toLowerCase()) === 0);
+  return (hit && SENDER_ALIAS[hit]) || normSender(row.name) || String(row.id);
+}
+
 /* Supabase 응답을 화면용 행으로 변환 */
 function remoteMessages() {
   return (sb.messages || []).map((row) => ({
@@ -505,7 +515,8 @@ function lastMessageBy(charId) {
 
 function agentRows() {
   const rows = (state.agents || []).map((a) => Object.assign({}, a, { source: 'seed' }));
-  (sb.agents || []).forEach((a) => {
+  (sb.agents || []).forEach((raw) => {
+    const a = Object.assign({}, raw, { id: agentKey(raw) });
     const base = charById(a.id) || {};
     const row = {
       id: a.id,
@@ -536,7 +547,8 @@ function agentRows() {
 /* 실시간 비서 상태를 오피스 맵 캐릭터에도 반영 */
 function applyAgentOverlay() {
   if (!state || !Array.isArray(state.characters) || !Array.isArray(sb.agents)) return;
-  sb.agents.forEach((a) => {
+  sb.agents.forEach((raw) => {
+    const a = Object.assign({}, raw, { id: agentKey(raw) });
     const c = state.characters.find((x) => x.id === a.id);
     if (!c) return;
     if (a.current_task) c.task = a.current_task;
