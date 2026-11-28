@@ -1336,7 +1336,10 @@ picture { display: block; }
 
 /* ---------------- mobile: 회의실 가독성 ---------------- */
 @media (max-width: 639px) {
-  #view-chat { padding-bottom: 26px; }
+  #view-chat { padding-bottom: 0; }
+  /* 맨 아래까지 스크롤했을 때 입력 바가 탭바에 붙어 있도록 본문 하단 여백을 맞춤 */
+  .app-main { padding-bottom: calc(var(--tabbar-h) + 6px + env(safe-area-inset-bottom)); }
+  .app-header { background: rgba(255, 255, 255, .93); }
   .tabbar { background: rgba(255, 255, 255, .95); }
   #view-chat .view-head { padding: 2px 2px 9px; }
   #view-chat .view-head h2 { font-size: 17.5px; }
